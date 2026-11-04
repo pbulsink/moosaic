@@ -1,0 +1,10 @@
+Package: moosaic
+Title: Multivariate Organic and Oxygenate Speciation and Analysis with Integrated Carbon detection
+Version: 0.0.0.9000
+Authors@R: 
+    person("Philip", "Bulsink", email = "philip.bulsink@nrcan-rncan.gc.ca", role = c("aut", "cre"))
+Description: Automated data extraction, deconvolution, and spectral searching for GC-FID/MS data.
+License: GPL (>= 3)
+Config/roxygen2/version: 8.1.0
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
