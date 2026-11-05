@@ -56,6 +56,7 @@
       P = 100
     ),
     moosaic.allowed_elements = c("C", "H", "O", "N", "S"),
+    moosaic.disallowed_element_penalty = 100,
     # Quantification
     moosaic.quant_style = "internal"
   )

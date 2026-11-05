@@ -15,6 +15,7 @@
 #' @param fid_hz Numeric; FID sampling rate (default 50 Hz).
 #' @param scan_s Numeric; MS scan duration (default 0.27 s).
 #' @param seed Integer; random seed for reproducibility.
+#' @param duration Numeric; run length (min). Shorter runs are much faster.
 #'
 #' @return A `gcms_fid_exp` object with ground truth stored in `$processing$synthetic_truth`.
 #'
@@ -29,7 +30,8 @@ make_synthetic_run <- function(
   noise = 0,
   fid_hz = 50,
   scan_s = 0.27,
-  seed = NULL
+  seed = NULL,
+  duration = 120
 ) {
   if (!is.null(seed)) {
     set.seed(seed)
@@ -53,8 +55,8 @@ make_synthetic_run <- function(
   fid_step_min <- fid_step / 60 # convert to min
   scan_step_min <- scan_s / 60
 
-  # Build FID trace over 120 minutes
-  fid_rt <- seq(-fid_step_min, 120, by = fid_step_min)
+  # Build FID trace over `duration` minutes
+  fid_rt <- seq(-fid_step_min, duration, by = fid_step_min)
   fid_intensity <- numeric(length(fid_rt))
 
   # Add each component as Gaussian
@@ -73,7 +75,7 @@ make_synthetic_run <- function(
   }
 
   # Build MS scans (aligned to scan grid, then apply delay)
-  scan_rt_nominal <- seq(0.001, 120, by = scan_step_min)
+  scan_rt_nominal <- seq(0.001, duration, by = scan_step_min)
   scan_rt <- scan_rt_nominal + delay
   n_scans <- length(scan_rt)
 
@@ -91,7 +93,7 @@ make_synthetic_run <- function(
   for (i in seq_len(n_comp)) {
     sigma <- widths[i] / (2 * sqrt(2 * log(2)))
     # Peak envelope across scans
-    peak_envelope <- 1000 * exp(-0.5 * ((scan_rt - centers[i]) / sigma)^2)
+    peak_envelope <- 1000 * exp(-0.5 * ((scan_rt_nominal - centers[i]) / sigma)^2)
 
     # Component spectrum
     spec <- spectra[[i]]
@@ -129,21 +131,13 @@ make_synthetic_run <- function(
   )
 
   # Rebuild MS long format for consistency
-  long_data <- data.frame()
-  for (idx in seq_len(n_scans)) {
-    for (mz_idx in seq_len(n_mz)) {
-      if (D[idx, mz_idx] > 0) {
-        long_data <- rbind(
-          long_data,
-          data.frame(
-            rt = scan_rt[idx],
-            mz = all_mz[mz_idx],
-            intensity = D[idx, mz_idx]
-          )
-        )
-      }
-    }
-  }
+  nz <- which(D > 0, arr.ind = TRUE)
+  nz <- nz[order(nz[, 1], nz[, 2]), , drop = FALSE]
+  long_data <- data.frame(
+    rt = scan_rt[nz[, 1]],
+    mz = all_mz[nz[, 2]],
+    intensity = D[nz]
+  )
   ms$data <- as.matrix(long_data)
 
   # Build FID structure

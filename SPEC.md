@@ -202,6 +202,7 @@ All defaults in **one file**: `R/aaa-options.R` (`.moosaic_default_options()`); 
 | `moosaic.ri_penalty_per_unit` | `1` | RI penalty |
 | `moosaic.element_penalties` | `c(N = 50, S = 50, Cl = 100, Br = 100, Si = 25, P = 100)` | element penalty |
 | `moosaic.allowed_elements` | `c("C","H","O","N","S")` | element filter |
+| `moosaic.disallowed_element_penalty` | `100` | element penalty (per atom of an element neither allowed nor listed) |
 | `moosaic.quant_style` | `"internal"` | quantification |
 
 | File | Function | Exported | Purpose |

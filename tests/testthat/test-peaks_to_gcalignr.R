@@ -1,0 +1,10 @@
+test_that(".peaks_to_gcalignr() returns RT/area data frames named fid and tic", {
+  fp <- tibble::tibble(apex_rt = c(5, 10), height = c(100, 200))
+  tp <- tibble::tibble(apex_rt = c(5.05, 10.05, 12), height = c(1, 2, 3))
+  out <- .peaks_to_gcalignr(fp, tp)
+  expect_named(out, c("fid", "tic"))
+  expect_named(out$fid, c("RT", "area"))
+  expect_type(out$fid$RT, "double")
+  expect_equal(nrow(out$tic), 3L)
+  expect_equal(out$fid$area, c(100, 200))
+})

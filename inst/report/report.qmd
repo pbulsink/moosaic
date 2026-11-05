@@ -1,0 +1,97 @@
+---
+title: "GC-MS/FID Report"
+format:
+  pdf:
+    papersize: letter
+    geometry: margin=0.6in
+    fontsize: 9pt
+params:
+  result_rds: ""
+execute:
+  echo: false
+  warning: false
+---
+
+```{r setup}
+library(knitr)
+result <- readRDS(params$result_rds)
+info <- result$quant$info
+s <- result$summary
+t <- s$totals
+q <- s$qc
+```
+
+## Total Compound Report
+
+```{r header}
+kable(data.frame(
+  ` ` = c("Sample ID", "Sample Name", "Project Code", "Report Date", "Analyst"),
+  `  ` = c(info$sample_id, info$sample_name, info$project_code,
+           format(info$report_date, "%Y-%m-%d"), info$analyst),
+  `   ` = c("Density", "Methanol", "Water", "GC Recovery", "Total:"),
+  `    ` = c(sprintf("%.4f g/mL", info$density),
+             sprintf("%.1f wt. %%", info$methanol_wt_pct),
+             sprintf("%.1f wt. %%", info$water_wt_pct),
+             sprintf("%.1f wt. %%", t$gc_recovery),
+             sprintf("%.1f wt. %%", t$total)),
+  `     ` = c("Aligned Peaks", "Unique Peaks", "Total Peaks",
+              "Interpolated Peaks", "MS/FID Offset Time"),
+  `      ` = c(q$aligned_peaks, q$unique_peaks, q$total_peaks,
+               q$interpolated_peaks, sprintf("%.3f min", q$ms_fid_offset)),
+  check.names = FALSE
+), booktabs = TRUE, align = "llllll")
+```
+
+```{r peaks}
+# Analyst-facing QC columns are omitted from the client PDF.
+tbl <- moosaic::total_compound_table(result)
+qc_cols <- c("MS Match Score", "Area (MS)", "FID/MS Ratio",
+             "Rank Confidence", "RI Delta", "Final Score")
+kable(tbl[, !names(tbl) %in% qc_cols], booktabs = TRUE, longtable = TRUE,
+      digits = 3)
+```
+
+\newpage
+
+## Summary Report
+
+```{r summary-header}
+kable(data.frame(
+  ` ` = c("Sample ID", "Sample Name", "Project Code", "Report Date", "Analyst",
+          "Density (g/mL)"),
+  `  ` = c(info$sample_id, info$sample_name, info$project_code,
+           format(info$report_date, "%Y-%m-%d"), info$analyst,
+           sprintf("%.4f", info$density)),
+  check.names = FALSE
+), booktabs = TRUE)
+```
+
+```{r families}
+fam <- rbind(
+  data.frame(`Compound Type` = s$families$compound_type,
+             `Total Amount (wt. %)` = sprintf("%.1f", s$families$wt_pct),
+             check.names = FALSE),
+  data.frame(`Compound Type` = c("Methanol (external)", "Water", "TOTAL"),
+             `Total Amount (wt. %)` = sprintf("%.1f", c(t$methanol, t$water, t$total)),
+             check.names = FALSE)
+)
+kable(fam, booktabs = TRUE)
+```
+
+```{r elements}
+el <- data.frame(
+  Element = c(s$elements$element, "Sum"),
+  `Calculated wt. %` = sprintf("%.2f", c(s$elements$wt_pct, t$element_sum)),
+  check.names = FALSE
+)
+kable(el, booktabs = TRUE)
+```
+
+**NOTE:** Elemental values are wt% sum of all GC determined compounds and does not include H~2~O
+
+**NOTES:**
+
+```{r notes, results='asis'}
+notes <- moosaic:::.summary_notes()
+cat(paste0(seq_along(notes), ". ", notes), sep = "\n\n")
+```
