@@ -43,10 +43,12 @@ detect_fid_windows <- function(exp) {
   min_scans <- .get_moosaic_option("min_scans_per_window")
   few <- windows$window_id[windows$n_scans < min_scans]
   if (length(few) > 0L) {
+    n_few <- length(few)
+    few_ids <- paste(few, collapse = ", ")
     .moosaic_warn(
       c(
-        "{.fn detect_fid_windows}: {length(few)} window{?s} ha{?s/ve} fewer than {min_scans} MS scans.",
-        i = "Window id{?s}: {few}"
+        "{.fn detect_fid_windows}: {n_few} window{?s} ha{?s/ve} fewer than {min_scans} MS scans.",
+        i = "Window id{cli::qty(n_few)}{?s}: {few_ids}"
       ),
       class = "few_scans",
       call = rlang::current_env()

@@ -24,8 +24,10 @@ process_window <- function(window, exp) {
   mm <- extract_ms_matrix(exp, window)
   fid_det <- .extract_fid_window(exp, window, call = call)
   rk <- estimate_rank(mm$D, fid_det)
-  cons <- build_constraints(fid_det, rk$rank, background = bg)
-  fit <- fit_window(mm$D, rk$rank, cons$C0, background = bg)
+  # The background column also needs a degree of freedom in tiny windows
+  rank <- max(1L, min(rk$rank, min(dim(mm$D)) - bg))
+  cons <- build_constraints(fid_det, rank, background = bg)
+  fit <- fit_window(mm$D, rank, cons$C0, background = bg)
   fid_raw <- .extract_fid_window(exp, window, raw = TRUE, call = call)
   .build_components(fit, fid_raw, window, background = bg, call = call)
 }

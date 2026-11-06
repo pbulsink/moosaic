@@ -10,7 +10,11 @@ test_that("annotate_component() picks the in-window hit over a higher raw match 
       )
     ))
   )
-  withr::local_options(moosaic.min_match_factor = 600)
+  withr::local_options(
+    moosaic.min_match_factor = 600,
+    moosaic.ri_penalty_per_unit = 1,
+    moosaic.ri_grace = 15
+  )
   out <- annotate_component(cmp, ri_cal = cal)
   expect_s3_class(out, "moosaic_component")
   expect_equal(out$ri, 800)
@@ -146,9 +150,11 @@ test_that("identify_components() rejects a bad result", {
 
 test_that("annotate_component() uses moosaic.disallowed_element_penalty for other elements", {
   cmp <- mk_comp("w1_c1", 5, c(`78` = 1))
-  local_mocked_bindings(.run_mspepsearch = mock_search(list(
-    w1_c1 = mk_hits("fluoro", 900, "CF4", NA)
-  )))
+  local_mocked_bindings(
+    .run_mspepsearch = mock_search(list(
+      w1_c1 = mk_hits("fluoro", 900, "CF4", NA)
+    ))
+  )
   withr::local_options(moosaic.disallowed_element_penalty = 30)
   expect_equal(annotate_component(cmp)$hits$final, 900 - 4 * 30)
 })

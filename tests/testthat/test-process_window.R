@@ -1,11 +1,13 @@
-sp <- \(mz) setNames(rep(1, length(mz)), mz)
+spec <- function(mz) {
+  setNames(rep(1, length(mz)), mz)
+}
 
-mk_pair <- \() {
+mk_pair <- function() {
   make_synthetic_run(
     n_comp = 2,
     centers = c(10, 10.07),
     widths = c(0.04, 0.04),
-    spectra = list(sp(c(40, 41, 42)), sp(c(50, 51, 52))),
+    spectra = list(spec(c(40, 41, 42)), spec(c(50, 51, 52))),
     carbons = 1:2
   )
 }
@@ -53,9 +55,9 @@ test_that("deconvolve_run() processes every FID window into a moosaic_result", {
   set.seed(7323)
   exp <- make_synthetic_run(
     n_comp = 2,
-    centers = c(10, 20),
+    centers = c(5, 10),
     widths = c(0.04, 0.04),
-    spectra = list(sp(c(40, 41)), sp(c(50, 51))),
+    spectra = list(spec(c(40, 41)), spec(c(50, 51))),
     carbons = 1:2
   )
   res <- suppressMessages(suppressWarnings(deconvolve_run(exp)))
@@ -64,4 +66,11 @@ test_that("deconvolve_run() processes every FID window into a moosaic_result", {
   expect_equal(nrow(res$windows), 2L)
   expect_length(res$components, 2L)
   expect_equal(nrow(components_to_tibble(res)), 2L)
+})
+
+test_that("process_window() copes with a window of only a few scans", {
+  withr::local_options(moosaic.background_component = TRUE)
+  tiny <- list(window_id = 1L, start_rt = 10, end_rt = 10 + 3.5 * 0.27 / 60)
+  comps <- suppressMessages(suppressWarnings(process_window(tiny, mk_pair())))
+  expect_true(length(comps) >= 1L)
 })

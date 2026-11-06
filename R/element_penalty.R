@@ -1,4 +1,7 @@
 .element_symbols <- c(
+  # Hydrogen isotopes appear in NIST library formulas
+  "D",
+  "T",
   "H",
   "He",
   "Li",

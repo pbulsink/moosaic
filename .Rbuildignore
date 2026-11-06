@@ -1,5 +1,5 @@
 ^LICENSE\.md$
-^ONSITE\.CAL$
 ^\.Rproj\.user$
 ^dev$
 ^moosaic\.Rproj$
+^tests/testthat/fixtures/real_run$

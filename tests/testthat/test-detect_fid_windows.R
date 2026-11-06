@@ -32,3 +32,15 @@ test_that("detect_fid_windows() warns about windows with few MS scans", {
 test_that("detect_fid_windows() rejects non-experiments", {
   expect_error(detect_fid_windows(list()), class = "moosaic-error-bad_argument")
 })
+
+test_that("detect_fid_windows() few-scans warning handles several windows", {
+  exp <- make_synthetic_run(
+    n_comp = 2,
+    centers = c(5, 10),
+    widths = c(0.04, 0.04),
+    spectra = list(spec(c(40, 41)), spec(c(50, 51))),
+    carbons = c(1, 2)
+  )
+  withr::local_options(moosaic.min_scans_per_window = 10000L)
+  expect_warning(detect_fid_windows(exp), "Window ids")
+})

@@ -57,11 +57,54 @@
     "standard non-polar" = "stdnp",
     ri_type
   )
-  fn(
-    spectra = queries,
-    libraries = lib,
-    n_hits = .get_moosaic_option("search_hits"),
-    n_threads = .get_moosaic_option("search_threads"),
-    ri_column_type = ri_type
+  # mspepsearchr accepts at most one library besides mainlib/replib per call,
+  # so each extra library gets its own search and the hits are merged.
+  core <- tolower(basename(lib)) %in% c("mainlib", "replib")
+  batches <- c(
+    if (any(core)) list(lib[core]),
+    lapply(lib[!core], \(x) x)
   )
+  per_batch <- lapply(batches, \(libs) {
+    fn(
+      spectra = queries,
+      libraries = libs,
+      n_hits = .get_moosaic_option("search_hits"),
+      n_threads = min(.get_moosaic_option("search_threads"), length(queries)),
+      ri_column_type = ri_type
+    )
+  })
+  if (length(per_batch) == 1L) {
+    return(per_batch[[1]])
+  }
+  .merge_search_batches(per_batch)
+}
+
+#' Merge per-library search results query by query
+#'
+#' @param batches List of `mspepsearchr` results (one data frame per query,
+#'   same query order).
+#'
+#' @return One list of data frames, rows stacked per query, best match factor
+#'   first, with the `unknown_name` attribute kept.
+#'
+#' @keywords internal
+.merge_search_batches <- function(batches) {
+  lapply(seq_along(batches[[1]]), \(i) {
+    parts <- lapply(batches, \(b) b[[i]])
+    parts <- parts[vapply(parts, \(x) is.data.frame(x) && nrow(x) > 0L, TRUE)]
+    nm <- attr(batches[[1]][[i]], "unknown_name")
+    out <- if (length(parts) == 0L) {
+      batches[[1]][[i]]
+    } else {
+      df <- do.call(rbind, parts)
+      mf <- intersect(c("mf", "MF", "match_factor"), names(df))
+      if (length(mf) > 0L) {
+        df <- df[order(-df[[mf[1]]]), , drop = FALSE]
+        rownames(df) <- NULL
+      }
+      df
+    }
+    attr(out, "unknown_name") <- nm
+    out
+  })
 }

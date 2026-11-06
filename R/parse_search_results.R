@@ -14,13 +14,14 @@
     if (n == 0L) {
       return(NULL)
     }
+    blank_na <- \(x) ifelse(is.na(x) | !nzchar(trimws(x)), NA_character_, x)
     col <- \(x, type) if (is.null(x)) rep(type, n) else x
     tibble::tibble(
       component_id = rep(attr(h, "unknown_name") %||% NA_character_, n),
       hit_rank = seq_len(n),
       name = as.character(col(h$name, NA_character_)),
       cas = as.character(col(h$cas, NA_character_)),
-      formula = as.character(col(h$formula, NA_character_)),
+      formula = blank_na(as.character(col(h$formula, NA_character_))),
       mw = as.numeric(col(h$mw, NA_real_)),
       mf = as.numeric(col(h$mf, NA_real_)),
       rmf = as.numeric(col(h$rmf, NA_real_)),

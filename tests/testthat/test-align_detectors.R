@@ -1,6 +1,8 @@
-spec <- \(mz) setNames(rep(1, length(mz)), mz)
+spec <- function(mz) {
+  setNames(rep(1, length(mz)), mz)
+}
 
-mk_exp <- \(delay) {
+mk_exp <- function(delay) {
   make_synthetic_run(
     n_comp = 4,
     centers = c(5, 10, 15, 20),

@@ -47,7 +47,9 @@ test_that("write_pdf_report() names the file from the sample by default", {
 test_that("write_pdf_report() renders a real PDF when LaTeX is available", {
   skip_if_not_installed("quarto")
   skip_on_cran()
-  skip_if(is.null(quarto::quarto_path()), "Quarto is not available")
+  if (!quarto::quarto_available()) {
+    skip("Quarto is not available")
+  }
   skip_if(Sys.which("pdflatex") == "" && Sys.which("xelatex") == "", "No LaTeX")
   path <- withr::local_tempfile(fileext = ".pdf")
   write_pdf_report(mk_quantified(), path)

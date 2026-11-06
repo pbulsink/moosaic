@@ -1,4 +1,4 @@
-sp <- \(mz) setNames(rep(1, length(mz)), mz)
+spec <- \(mz) setNames(rep(1, length(mz)), mz)
 
 # Search mock: answers the i-th query (retention-time order) from `truth`
 mock_by_order <- function(truth) {
@@ -27,9 +27,14 @@ test_that("synthetic run: truth is recovered from deconvolution to compound tabl
     n_comp = 3,
     centers = truth$rt,
     widths = truth$width,
-    spectra = list(sp(c(40, 41, 43)), sp(c(50, 51, 53)), sp(c(60, 61, 63))),
+    spectra = list(
+      spec(c(40, 41, 43)),
+      spec(c(50, 51, 53)),
+      spec(c(60, 61, 63))
+    ),
     carbons = c(7, 8, 6),
-    noise = 0.5
+    noise = 0.5,
+    duration = 30
   )
   local_mocked_bindings(.run_mspepsearch = mock_by_order(truth))
 

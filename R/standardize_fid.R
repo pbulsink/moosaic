@@ -9,6 +9,13 @@
 #'
 #' @keywords internal
 .standardize_fid <- function(raw, call = rlang::caller_env()) {
+  # chromConverter "wide" output: one intensity column, rt (min) in rownames
+  if (is.matrix(raw) && ncol(raw) == 1L && !is.null(rownames(raw))) {
+    rt <- suppressWarnings(as.numeric(rownames(raw)))
+    if (!anyNA(rt)) {
+      return(list(rt = rt, intensity = as.numeric(raw[, 1])))
+    }
+  }
   if (is.matrix(raw) || is.data.frame(raw)) {
     if (ncol(raw) != 2) {
       .moosaic_abort(

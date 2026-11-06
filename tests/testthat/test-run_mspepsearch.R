@@ -24,7 +24,10 @@ test_that(".run_mspepsearch() dispatches on the search function option and passe
     fake
   })
   seen_type <- NULL
-  q <- list(list(name = "a", mz = 41, intst = 999L))
+  q <- list(
+    list(name = "a", mz = 41, intst = 999L),
+    list(name = "b", mz = 42, intst = 999L)
+  )
   expect_equal(.run_mspepsearch(q), "sentinel")
   expect_equal(seen_type, "hybrid")
   expect_equal(seen$spectra, q)
@@ -93,4 +96,20 @@ test_that(".parse_search_results() returns a zero-row tibble for no hits", {
     expect_equal(nrow(out), 0L)
     expect_true("component_id" %in% names(out))
   }
+})
+
+test_that(".run_mspepsearch() never asks for more threads than queries", {
+  seen <- NULL
+  withr::local_options(
+    moosaic.library_path = list(tempdir()),
+    moosaic.search_threads = 4L
+  )
+  local_mocked_bindings(
+    .search_fn = \(type, ...) \(spectra, libraries, n_hits, n_threads, ri_column_type) {
+      seen <<- n_threads
+      list()
+    }
+  )
+  .run_mspepsearch(list(list(name = "a")))
+  expect_equal(seen, 1L)
 })

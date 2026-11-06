@@ -31,7 +31,7 @@ make_synthetic_run <- function(
   fid_hz = 50,
   scan_s = 0.27,
   seed = NULL,
-  duration = 120
+  duration = 15
 ) {
   if (!is.null(seed)) {
     set.seed(seed)
@@ -93,7 +93,8 @@ make_synthetic_run <- function(
   for (i in seq_len(n_comp)) {
     sigma <- widths[i] / (2 * sqrt(2 * log(2)))
     # Peak envelope across scans
-    peak_envelope <- 1000 * exp(-0.5 * ((scan_rt_nominal - centers[i]) / sigma)^2)
+    peak_envelope <- 1000 *
+      exp(-0.5 * ((scan_rt_nominal - centers[i]) / sigma)^2)
 
     # Component spectrum
     spec <- spectra[[i]]
