@@ -23,7 +23,7 @@
     moosaic.mz_max = 500,
     moosaic.mz_bin = 1,
     # Alignment
-    moosaic.align_engine = "gcalignr",
+    moosaic.align_engine = "xcorr",
     moosaic.max_delay = 0.2,
     moosaic.align_step = 0.001,
     # FID processing

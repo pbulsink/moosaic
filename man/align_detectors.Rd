@@ -9,15 +9,15 @@ align_detectors(exp, engine = NULL)
 \arguments{
 \item{exp}{A \code{gcms_fid_exp} object.}
 
-\item{engine}{\code{"gcalignr"} or \code{"xcorr"}. \code{NULL} uses the
+\item{engine}{\code{"xcorr"} (default) or \code{"gcalignr"}. \code{NULL} uses the
 \code{moosaic.align_engine} option.}
 }
 \value{
 \code{exp} with \code{alignment} set to a list of \code{delay} (min; positive when
 MS times are later than FID times), \code{engine}, \code{score} (cross-correlation
-at the delay, \code{NA} if unavailable), \code{validated} (\code{FALSE}) and
-\code{cross_check} (\code{engine} and \code{delay} of the other engine, \code{NA} if it
-failed). The step is logged in \code{processing$align_detectors}.
+at the delay), \code{validated} (\code{FALSE}) and \code{cross_check} (\code{engine} and
+\code{delay} of the xcorr cross-check; both \code{NA} when no cross-check was run).
+The step is logged in \code{processing$align_detectors}.
 }
 \description{
 Estimates the retention-time delay between the MS and the FID and records
@@ -25,11 +25,13 @@ it in the experiment. Raw times are never changed; downstream functions
 subtract the delay from MS times.
 }
 \details{
-The other engine is always run as a cross-check; a warning of
-class \code{engine_disagreement} is issued when the two delays differ by more
-than one MS scan interval. If GCalignR cannot run because too few peaks
-are found, the cross-correlation result is used with a warning of class
-\code{engine_fallback}. Search range and step come from the
+Cross-correlation alone is sufficient to align the FID with the MS
+for guiding deconvolution windows, so with \code{engine = "xcorr"} GCalignR is
+not run. With \code{engine = "gcalignr"}, xcorr is run as a cheap cross-check;
+a warning of class \code{engine_disagreement} is issued when the two delays
+differ by more than one MS scan interval. If GCalignR cannot run because
+too few peaks are found, the cross-correlation result is used with a
+warning of class \code{engine_fallback}. Search range and step come from the
 \code{moosaic.max_delay} and \code{moosaic.align_step} options.
 }
 \examples{

@@ -4,7 +4,14 @@
 \alias{.estimate_delay}
 \title{Estimate the MS-to-FID delay with a chosen engine}
 \usage{
-.estimate_delay(fid, tic, engine, max_delay, step, call = rlang::caller_env())
+.estimate_delay(
+  fid,
+  tic,
+  engine,
+  max_delay = 0.1,
+  step = 0.001,
+  call = rlang::caller_env()
+)
 }
 \arguments{
 \item{fid, tic}{Lists with numeric \code{rt} and \code{intensity}; the FID trace and

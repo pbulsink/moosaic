@@ -109,7 +109,7 @@ Internal: max = 1 (`normS = 1`). MSP export / search input: scaled to max = 999,
 
 ### 1.6 Alignment engine
 
-Default `"gcalignr"`. GCalignR aligns **peak lists** (RT + area), not continuous traces, so: detect peaks in FID and TIC → convert to GCalignR input → linear shift estimate. Internal cross-correlation (`"xcorr"`) kept as fallback/cross-check. Disagreement > 1 scan between engines → `cli_warn`.
+Default `"xcorr"`: normalised cross-correlation of the FID and TIC traces, sufficient for FID-guided deconvolution windows (no peak recombination needed). `"gcalignr"` is opt-in: GCalignR aligns **peak lists** (RT + area), so detect peaks in FID and TIC → convert to GCalignR input → linear shift estimate; it is slow (minutes on dense runs) and its peak-merging is more relevant to post-deconvolution quantification. When `"gcalignr"` is primary, xcorr runs as fallback/cross-check (disagreement > 1 scan → `cli_warn`); when `"xcorr"` is primary, GCalignR is not run.
 
 ---
 
@@ -181,7 +181,7 @@ All defaults in **one file**: `R/aaa-options.R` (`.moosaic_default_options()`); 
 | `moosaic.min_match_factor` | `600` | candidate filter |
 | `moosaic.ri_calibration_path` | `NULL` | RI |
 | `moosaic.mz_min` / `mz_max` / `mz_bin` | `35`, `500`, `1` | matrix building |
-| `moosaic.align_engine` | `"gcalignr"` (`"gcalignr"`, `"xcorr"`) | alignment |
+| `moosaic.align_engine` | `"xcorr"` (`"xcorr"`, `"gcalignr"`) | alignment |
 | `moosaic.max_delay` | `0.2` (min) | alignment |
 | `moosaic.align_step` | `0.001` (min) | GCalignR shift step |
 | `moosaic.fid_smooth_window` | `7L` | FID detection only |
@@ -612,6 +612,7 @@ Each step: unit tests → implement → stage tests → challenge tests → cove
 | ALS baseline | Confirmed: last column of C (1.2). |
 | FID scaling | Read with `scale = TRUE` (chromConverter default). |
 | Dependencies | Approved. |
+| Alignment engine | Default changed to `"xcorr"`; GCalignR (~700 s per run in profiling) is opt-in only and no longer run as a cross-check. Its peak recombination is reserved for post-deconvolution quantification needs (1.6). |
 
 ## 20. Later extensions
 

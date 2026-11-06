@@ -19,8 +19,9 @@
   fid,
   tic,
   engine,
-  max_delay,
-  step,
+  max_delay = 0.1,
+  step = 0.001,
+
   call = rlang::caller_env()
 ) {
   if (

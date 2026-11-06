@@ -28,16 +28,17 @@
     )
   }
   peaks <- .peaks_to_gcalignr(fid_peaks, tic_peaks)
-  res <- NULL
-  utils::capture.output(
-    res <- suppressMessages(
-      GCalignR::align_chromatograms(
-        peaks,
-        rt_col_name = "RT",
-        reference = "fid",
-        max_linear_shift = max_delay,
-        step_size = step
-      )
+  # Sink to the null device: capture.output() grows a text connection on every
+  # progress-bar update, which dominated runtime in profiling.
+  sink(nullfile())
+  on.exit(sink(), add = TRUE)
+  res <- suppressMessages(
+    GCalignR::align_chromatograms(
+      peaks,
+      rt_col_name = "RT",
+      reference = "fid",
+      max_linear_shift = max_delay,
+      step_size = step
     )
   )
   shifts <- res$Logfile$LinearShift

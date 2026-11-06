@@ -30,18 +30,29 @@ test_that("align_detectors() recovers synthetic delays of 0 and 0.05 with both e
   }
 })
 
-test_that("align_detectors() records the cross-check and leaves raw data unchanged", {
+test_that("align_detectors() with xcorr skips GCalignR and leaves raw data unchanged", {
   exp <- mk_exp(0.05)
+  local_mocked_bindings(
+    .estimate_delay_gcalignr = \(...) stop("GCalignR should not run")
+  )
   out <- align_detectors(exp, engine = "xcorr")
   expect_identical(out$fid, exp$fid)
   expect_identical(out$ms$rt, exp$ms$rt)
-  expect_equal(out$alignment$cross_check$engine, "gcalignr")
+  expect_true(is.na(out$alignment$cross_check$engine))
+  expect_true(is.na(out$alignment$cross_check$delay))
   expect_false(out$alignment$validated)
   expect_gt(out$alignment$score, 0.9)
   expect_named(out$processing$align_detectors, c("engine", "max_delay", "step"))
 })
 
-test_that("align_detectors() uses the engine option by default", {
+test_that("align_detectors() with gcalignr records an xcorr cross-check", {
+  out <- align_detectors(mk_exp(0.05), engine = "gcalignr")
+  expect_equal(out$alignment$cross_check$engine, "xcorr")
+  expect_gt(out$alignment$score, 0.9)
+})
+
+test_that("align_detectors() defaults to the xcorr engine", {
+  expect_equal(.moosaic_default_options()$moosaic.align_engine, "xcorr")
   withr::local_options(moosaic.align_engine = "xcorr")
   expect_equal(align_detectors(mk_exp(0))$alignment$engine, "xcorr")
 })
@@ -52,7 +63,7 @@ test_that("align_detectors() warns when the engines disagree by more than a scan
     .estimate_delay_gcalignr = \(...) 0.15
   )
   expect_warning(
-    align_detectors(exp, engine = "xcorr"),
+    align_detectors(exp, engine = "gcalignr"),
     class = "moosaic-warning-engine_disagreement"
   )
 })
@@ -71,6 +82,7 @@ test_that("align_detectors() falls back to xcorr when GCalignR has too few peaks
     class = "moosaic-warning-engine_fallback"
   )
   expect_equal(out$alignment$engine, "xcorr")
+  expect_true(is.na(out$alignment$cross_check$engine))
   expect_true(is.na(out$alignment$cross_check$delay))
 })
 
