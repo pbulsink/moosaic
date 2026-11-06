@@ -91,7 +91,11 @@ test_that("estimate_rank() compares capped votes when deciding to skip", {
       1L
     }
   )
-  out <- estimate_rank(make_lowrank(3)$D, methods = c("svd", "bic", "pa"), max_rank = 3)
+  out <- estimate_rank(
+    make_lowrank(3)$D,
+    methods = c("svd", "bic", "pa"),
+    max_rank = 3
+  )
   expect_equal(pa_calls, 0L)
   expect_equal(out$rank, 3L)
 })

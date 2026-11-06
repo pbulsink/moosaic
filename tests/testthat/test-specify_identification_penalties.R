@@ -1,4 +1,3 @@
-
 test_that("specify_identification_penalties() sets penalties", {
   specify_identification_penalties(
     ri_grace = 15,

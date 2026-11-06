@@ -28,5 +28,8 @@ test_that(".element_penalty() aborts on an unknown element", {
 })
 
 test_that(".element_penalty() accepts hydrogen isotopes and penalises them", {
-  expect_equal(.element_penalty("C2D3N", c(), c("C", "H", "N"), default = 100), 300)
+  expect_equal(
+    .element_penalty("C2D3N", c(), c("C", "H", "N"), default = 100),
+    300
+  )
 })

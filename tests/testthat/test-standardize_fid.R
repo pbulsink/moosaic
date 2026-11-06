@@ -1,4 +1,3 @@
-
 test_that(".standardize_fid() converts a matrix to internal list structure", {
   fid_mat <- matrix(c(0.001, 0.002, 0.003, 100, 200, 150), nrow = 3, ncol = 2)
   attr(fid_mat, "sample_name") <- "test"
@@ -26,4 +25,3 @@ test_that(".standardize_fid() aborts on wrong column count", {
     class = "moosaic-error-bad_format"
   )
 })
-

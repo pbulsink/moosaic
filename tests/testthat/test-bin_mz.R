@@ -3,7 +3,10 @@ test_that(".bin_mz() maps fractional m/z to the nearest nominal bin", {
 })
 
 test_that(".bin_mz() supports non-unit bin widths", {
-  expect_equal(.bin_mz(c(40, 40.5, 41), mz_min = 40, mz_bin = 0.5), c(1L, 2L, 3L))
+  expect_equal(
+    .bin_mz(c(40, 40.5, 41), mz_min = 40, mz_bin = 0.5),
+    c(1L, 2L, 3L)
+  )
 })
 
 test_that(".bin_mz() returns indices outside 1..n for out-of-range m/z", {

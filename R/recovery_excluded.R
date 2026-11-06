@@ -7,7 +7,12 @@
 #'
 #' @keywords internal
 .recovery_excluded <- function(exclude_methanol = FALSE) {
-  base <- c("Methylene chloride", "Methane, dichloro-", "Acetonitrile", "Solvent")
+  base <- c(
+    "Methylene chloride",
+    "Methane, dichloro-",
+    "Acetonitrile",
+    "Solvent"
+  )
   if (exclude_methanol) {
     c(base, "Methyl Alcohol", "Methanol")
   } else {

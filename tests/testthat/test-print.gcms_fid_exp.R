@@ -1,4 +1,3 @@
-
 test_that("print.gcms_fid_exp() works on valid object", {
   fid <- list(
     rt = c(0, 0.001),
@@ -19,4 +18,3 @@ test_that("print.gcms_fid_exp() works on valid object", {
   )
   expect_output(print(exp), "GC-FID/MS Experiment")
 })
-

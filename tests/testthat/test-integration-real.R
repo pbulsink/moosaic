@@ -15,7 +15,7 @@ expected <- data.frame(
   rt = c(14.70, 18.46, 19.48, 19.96, 22.64)
 )
 
-test_that("real phenols-in-diesel run: process_sample() finds the target phenols", {
+test_that("real phenols-in-diesel run: process_sample() finds the target oxygenates", {
   skip_on_cran()
   skip_on_ci()
   # Takes about 36 minutes
@@ -40,7 +40,13 @@ test_that("real phenols-in-diesel run: process_sample() finds the target phenols
 
   elapsed <- system.time(
     res <- suppressMessages(
-      process_sample(real_ms, real_fid, info, ri_cal = real_cal, style = "internal")
+      process_sample(
+        real_ms,
+        real_fid,
+        info,
+        ri_cal = real_cal,
+        style = "internal"
+      )
     )
   )[["elapsed"]]
   message("process_sample() runtime: ", round(elapsed, 1), " s")

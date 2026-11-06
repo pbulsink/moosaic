@@ -1,4 +1,3 @@
-
 test_that("set_moosaic_options() sets named options and returns old values", {
   withr::local_options(moosaic.rank_max = 6L)
   old <- set_moosaic_options(rank_max = 10L, search_hits = 20L)
@@ -28,4 +27,3 @@ test_that("reset_moosaic_options() restores all defaults", {
   expect_equal(getOption("moosaic.rank_max"), 6L)
   expect_equal(getOption("moosaic.als_thresh"), 0.001)
 })
-

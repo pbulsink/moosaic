@@ -105,9 +105,11 @@ test_that(".run_mspepsearch() never asks for more threads than queries", {
     moosaic.search_threads = 4L
   )
   local_mocked_bindings(
-    .search_fn = \(type, ...) \(spectra, libraries, n_hits, n_threads, ri_column_type) {
-      seen <<- n_threads
-      list()
+    .search_fn = \(type, ...) {
+      \(spectra, libraries, n_hits, n_threads, ri_column_type) {
+        seen <<- n_threads
+        list()
+      }
     }
   )
   .run_mspepsearch(list(list(name = "a")))

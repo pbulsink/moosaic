@@ -6,6 +6,9 @@ test_that(".derivative_signal() recovers first and second derivatives of a quadr
 })
 
 test_that(".derivative_signal() aborts on length mismatch and short input", {
-  expect_error(.derivative_signal(1:10, 1:9), class = "moosaic-error-bad_argument")
+  expect_error(
+    .derivative_signal(1:10, 1:9),
+    class = "moosaic-error-bad_argument"
+  )
   expect_error(.derivative_signal(1:3, 1:3), class = "moosaic-error-bad_window")
 })

@@ -1,4 +1,3 @@
-
 test_that(".standardize_ms() handles long-format matrix", {
   ms_mat <- matrix(
     c(0.001, 0.001, 0.002, 0.002, 39.9, 40.1, 39.9, 40.1, 100, 200, 150, 250),
@@ -36,4 +35,3 @@ test_that(".standardize_ms() aborts on missing columns", {
     class = "moosaic-error-bad_format"
   )
 })
-

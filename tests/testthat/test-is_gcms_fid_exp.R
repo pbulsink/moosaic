@@ -1,4 +1,3 @@
-
 test_that("is_gcms_fid_exp() returns TRUE for valid objects", {
   fid <- list(rt = c(0, 0.001), intensity = c(100, 150), metadata = list())
   ms <- list(
@@ -16,4 +15,3 @@ test_that("is_gcms_fid_exp() returns TRUE for valid objects", {
   expect_true(is_gcms_fid_exp(exp))
   expect_false(is_gcms_fid_exp(list()))
 })
-

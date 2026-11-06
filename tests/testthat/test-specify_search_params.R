@@ -1,4 +1,3 @@
-
 test_that("specify_search_params() validates type via arg_match", {
   expect_error(
     specify_search_params(type = "bad_type"),
@@ -21,4 +20,3 @@ test_that("specify_search_params() sets valid parameters", {
   expect_equal(getOption("moosaic.search_hits"), 15L)
   expect_equal(getOption("moosaic.search_threads"), 2L)
 })
-

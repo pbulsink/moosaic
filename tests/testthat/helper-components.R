@@ -30,4 +30,3 @@ fake_fit <- function(bg = FALSE) {
   )
 }
 fake_window <- list(window_id = 3L, start_rt = 0, end_rt = 1)
-

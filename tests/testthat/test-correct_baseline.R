@@ -1,7 +1,11 @@
 test_that(".correct_baseline() removes a linear drift", {
   x <- 5 + 0.02 * seq_len(400)
   # Edges (within a window) are biased by padding
-  expect_equal(.correct_baseline(x, window = 41)[50:350], rep(0, 301), tolerance = 1e-8)
+  expect_equal(
+    .correct_baseline(x, window = 41)[50:350],
+    rep(0, 301),
+    tolerance = 1e-8
+  )
 })
 
 test_that(".correct_baseline() leaves a flat zero signal unchanged", {

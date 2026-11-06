@@ -12,4 +12,3 @@ test_that(".moosaic_default_options() returns a named list with all expected key
   )
   expect_true(all(expected_keys %in% names(opts)))
 })
-

@@ -50,5 +50,8 @@ test_that("total_compound_table() carries area_ms, ratio and rank confidence", {
 test_that("total_compound_table() requires a quantified result", {
   expect_error(total_compound_table(1), class = "moosaic-error-bad_argument")
   res <- structure(list(components = list()), class = "moosaic_result")
-  expect_error(total_compound_table(res), class = "moosaic-error-not_quantified")
+  expect_error(
+    total_compound_table(res),
+    class = "moosaic-error-not_quantified"
+  )
 })

@@ -1,4 +1,3 @@
-
 test_that(".extract_metadata() returns named list excluding structural attributes", {
   mat <- matrix(1:6, nrow = 2, ncol = 3)
   attr(mat, "sample_name") <- "test"
@@ -12,4 +11,3 @@ test_that(".extract_metadata() returns named list excluding structural attribute
   expect_true("units" %in% names(meta))
   expect_false("dim" %in% names(meta))
 })
-

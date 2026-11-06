@@ -37,7 +37,12 @@ specify_identification_penalties <- function(
     opts$element_penalties <- element_penalties
   }
   if (!is.null(disallowed_element_penalty)) {
-    if (!is.numeric(disallowed_element_penalty) || length(disallowed_element_penalty) != 1L || is.na(disallowed_element_penalty) || disallowed_element_penalty < 0) {
+    if (
+      !is.numeric(disallowed_element_penalty) ||
+        length(disallowed_element_penalty) != 1L ||
+        is.na(disallowed_element_penalty) ||
+        disallowed_element_penalty < 0
+    ) {
       .moosaic_abort(
         "{.arg disallowed_element_penalty} must be a single non-negative number.",
         class = "bad_input",

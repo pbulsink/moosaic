@@ -35,12 +35,24 @@ build_ms_matrix <- function(
   if (is_gcms_fid_exp(ms)) {
     ms <- ms$ms
   }
-  sp <- .build_sparse_ms_matrix(ms, mz_min, mz_max, mz_bin, call = rlang::caller_env())
+  sp <- .build_sparse_ms_matrix(
+    ms,
+    mz_min,
+    mz_max,
+    mz_bin,
+    call = rlang::caller_env()
+  )
   D <- as.matrix(sp)
   mz <- as.numeric(colnames(D))
   rt <- ms$rt
   if (!is.null(rt_range)) {
-    sub <- .subset_rt(D, rt, rt_range[1], rt_range[2], call = rlang::caller_env())
+    sub <- .subset_rt(
+      D,
+      rt,
+      rt_range[1],
+      rt_range[2],
+      call = rlang::caller_env()
+    )
     D <- sub$D
     rt <- sub$rt
   }

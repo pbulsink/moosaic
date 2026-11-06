@@ -59,7 +59,9 @@ summarize_report <- function(quantified, include_solvents = FALSE) {
     wt_pct = vapply(
       syms,
       \(s) {
-        frac <- peaks[[s]] * atomic_weights$mass[atomic_weights$symbol == s] / peaks$mw
+        frac <- peaks[[s]] *
+          atomic_weights$mass[atomic_weights$symbol == s] /
+          peaks$mw
         sum(peaks$wt_pct[used] * frac[used], na.rm = TRUE)
       },
       numeric(1),
@@ -83,7 +85,9 @@ summarize_report <- function(quantified, include_solvents = FALSE) {
       aligned_peaks = sum(peaks$origin == "library", na.rm = TRUE),
       unique_peaks = sum(peaks$origin != "library", na.rm = TRUE),
       total_peaks = nrow(peaks),
-      interpolated_peaks = sum(peaks$origin %in% c("interpolated", "extrapolated")),
+      interpolated_peaks = sum(
+        peaks$origin %in% c("interpolated", "extrapolated")
+      ),
       ms_fid_offset = quantified$alignment$delay %||% NA_real_
     ),
     info = info,

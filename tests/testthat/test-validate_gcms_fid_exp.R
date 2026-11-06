@@ -1,4 +1,3 @@
-
 test_that(".validate_gcms_fid_exp() accepts valid objects", {
   fid <- list(rt = c(0, 0.001), intensity = c(100, 150), metadata = list())
   ms <- list(
@@ -57,4 +56,3 @@ test_that(".validate_gcms_fid_exp() aborts on rt/tic length mismatch", {
     class = "moosaic-error-bad_structure"
   )
 })
-

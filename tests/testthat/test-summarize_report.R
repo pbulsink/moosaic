@@ -46,7 +46,10 @@ test_that("summarize_report() excludes methanol from recovery only when it is ad
 test_that("summarize_report() gives element weights that follow the formulas", {
   out <- mk_quantified()
   el <- out$summary$elements
-  expect_equal(el$element, c("Carbon", "Hydrogen", "Nitrogen", "Oxygen", "Sulfur"))
+  expect_equal(
+    el$element,
+    c("Carbon", "Hydrogen", "Nitrogen", "Oxygen", "Sulfur")
+  )
   expect_equal(sum(el$wt_pct), 100)
   expect_equal(el$wt_pct[el$element == "Nitrogen"], 0)
   expect_gt(el$wt_pct[el$element == "Oxygen"], 0)

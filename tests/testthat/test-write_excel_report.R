@@ -17,7 +17,10 @@ test_that("write_excel_report() puts the compound table below the header block",
   expect_equal(names(tbl), names(total_compound_table(x)))
   expect_equal(nrow(tbl), 4L)
   head <- openxlsx::read.xlsx(path, sheet = 1, rows = 1:5, colNames = FALSE)
-  expect_equal(head$X1, c("Sample ID", "Sample Name", "Project Code", "Report Date", "Analyst"))
+  expect_equal(
+    head$X1,
+    c("Sample ID", "Sample Name", "Project Code", "Report Date", "Analyst")
+  )
   expect_equal(head$X2[1], "S1")
 })
 
@@ -26,7 +29,10 @@ test_that("write_excel_report() writes family and element summaries", {
   path <- withr::local_tempfile(fileext = ".xlsx")
   write_excel_report(x, path)
   sm <- openxlsx::read.xlsx(path, sheet = 2, startRow = 7, sep.names = " ")
-  expect_equal(names(sm)[1:4], c("Compound Type", "Total Amount (wt. %)", "Element", "Calculated wt. %"))
+  expect_equal(
+    names(sm)[1:4],
+    c("Compound Type", "Total Amount (wt. %)", "Element", "Calculated wt. %")
+  )
   expect_equal(sm[[1]][1:8], x$summary$families$compound_type)
   expect_equal(sm[[1]][9:11], c("Methanol (external)", "Water", "TOTAL"))
   expect_equal(sm[[3]][6], "Sum")
@@ -52,6 +58,12 @@ test_that("write_excel_report() truncates long sheet names and validates path", 
   path <- withr::local_tempfile(fileext = ".xlsx")
   write_excel_report(x, path)
   expect_true(all(nchar(openxlsx::getSheetNames(path)) <= 31))
-  expect_error(write_excel_report(x, c("a", "b")), class = "moosaic-error-bad_argument")
-  expect_error(write_excel_report(1, path), class = "moosaic-error-bad_argument")
+  expect_error(
+    write_excel_report(x, c("a", "b")),
+    class = "moosaic-error-bad_argument"
+  )
+  expect_error(
+    write_excel_report(1, path),
+    class = "moosaic-error-bad_argument"
+  )
 })

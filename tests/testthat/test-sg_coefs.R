@@ -11,5 +11,8 @@ test_that(".sg_coefs() first-derivative filter recovers the slope of a line", {
 test_that(".sg_coefs() aborts on even windows and bad orders", {
   expect_error(.sg_coefs(6), class = "moosaic-error-bad_window")
   expect_error(.sg_coefs(5, order = 5), class = "moosaic-error-bad_argument")
-  expect_error(.sg_coefs(5, order = 2, deriv = 3), class = "moosaic-error-bad_argument")
+  expect_error(
+    .sg_coefs(5, order = 2, deriv = 3),
+    class = "moosaic-error-bad_argument"
+  )
 })

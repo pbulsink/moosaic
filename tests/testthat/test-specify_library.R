@@ -1,4 +1,3 @@
-
 test_that("specify_library() accepts character vector and stores as list", {
   # Create temp dirs
   dir1 <- withr::local_tempdir()
@@ -24,4 +23,3 @@ test_that("specify_library() aborts on missing path", {
     class = "moosaic-error-missing_path"
   )
 })
-
