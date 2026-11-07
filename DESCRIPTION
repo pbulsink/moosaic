@@ -23,3 +23,4 @@ Suggests:
     withr
 Config/testthat/edition: 3
 Remotes: andreysamokhin/mspepsearchr
+URL: https://pbulsink.github.io/moosaic/

@@ -3,3 +3,7 @@
 ^dev$
 ^moosaic\.Rproj$
 ^tests/testthat/fixtures/real_run$
+^\.github$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
