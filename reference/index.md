@@ -1,0 +1,68 @@
+# Package index
+
+## All functions
+
+- [`align_detectors()`](https://pbulsink.github.io/moosaic/reference/align_detectors.md)
+  : Align MS and FID retention times
+- [`annotate_component()`](https://pbulsink.github.io/moosaic/reference/annotate_component.md)
+  : Annotate one component by library search
+- [`build_constraints()`](https://pbulsink.github.io/moosaic/reference/build_constraints.md)
+  : Build FID-derived initial concentration profiles
+- [`build_ms_matrix()`](https://pbulsink.github.io/moosaic/reference/build_ms_matrix.md)
+  : Build a dense scan-by-m/z matrix from an experiment's MS data
+- [`components_to_tibble()`](https://pbulsink.github.io/moosaic/reference/components_to_tibble.md)
+  : Components as a tibble
+- [`deconvolve_run()`](https://pbulsink.github.io/moosaic/reference/deconvolve_run.md)
+  : Deconvolve every FID window of a run
+- [`detect_fid_peaks()`](https://pbulsink.github.io/moosaic/reference/detect_fid_peaks.md)
+  : Detect peaks in an FID trace
+- [`detect_fid_windows()`](https://pbulsink.github.io/moosaic/reference/detect_fid_windows.md)
+  : Detect deconvolution windows from the FID
+- [`estimate_rank()`](https://pbulsink.github.io/moosaic/reference/estimate_rank.md)
+  : Estimate the number of components in a window
+- [`extract_ms_matrix()`](https://pbulsink.github.io/moosaic/reference/extract_ms_matrix.md)
+  : Extract the MS data matrix for a window
+- [`fit_window()`](https://pbulsink.github.io/moosaic/reference/fit_window.md)
+  : Fit one window by MCR-ALS
+- [`gcms_fid_exp()`](https://pbulsink.github.io/moosaic/reference/gcms_fid_exp.md)
+  : Create a gcms_fid_exp object from raw data
+- [`identify_components()`](https://pbulsink.github.io/moosaic/reference/identify_components.md)
+  : Identify the components of a deconvolved run
+- [`is_gcms_fid_exp()`](https://pbulsink.github.io/moosaic/reference/is_gcms_fid_exp.md)
+  : Check if object is a gcms_fid_exp
+- [`moosaic_options()`](https://pbulsink.github.io/moosaic/reference/moosaic_options.md)
+  : Get all moosaic options
+- [`process_sample()`](https://pbulsink.github.io/moosaic/reference/process_sample.md)
+  : Process a sample from raw files to a quantified result
+- [`process_window()`](https://pbulsink.github.io/moosaic/reference/process_window.md)
+  : Deconvolve one window
+- [`quantify()`](https://pbulsink.github.io/moosaic/reference/quantify.md)
+  : Quantify identified components (Polyarc)
+- [`read_experiment()`](https://pbulsink.github.io/moosaic/reference/read_experiment.md)
+  : Read a GC-FID/MS experiment from ChemStation files
+- [`read_ri_calibration()`](https://pbulsink.github.io/moosaic/reference/read_ri_calibration.md)
+  : Read an RI calibration file
+- [`reset_moosaic_options()`](https://pbulsink.github.io/moosaic/reference/reset_moosaic_options.md)
+  : Reset moosaic options to defaults
+- [`sample_info()`](https://pbulsink.github.io/moosaic/reference/sample_info.md)
+  : Sample metadata for quantification and reports
+- [`set_moosaic_options()`](https://pbulsink.github.io/moosaic/reference/set_moosaic_options.md)
+  : Set moosaic options
+- [`specify_identification_penalties()`](https://pbulsink.github.io/moosaic/reference/specify_identification_penalties.md)
+  : Specify identification penalties
+- [`specify_library()`](https://pbulsink.github.io/moosaic/reference/specify_library.md)
+  : Specify library paths for spectral searching
+- [`specify_ri_calibration()`](https://pbulsink.github.io/moosaic/reference/specify_ri_calibration.md)
+  : Specify RI calibration file
+- [`specify_search_params()`](https://pbulsink.github.io/moosaic/reference/specify_search_params.md)
+  : Specify search parameters
+- [`summarize_report()`](https://pbulsink.github.io/moosaic/reference/summarize_report.md)
+  : Summarise a quantified result for reporting
+- [`total_compound_table()`](https://pbulsink.github.io/moosaic/reference/total_compound_table.md)
+  : Total compound table
+- [`write_excel_report()`](https://pbulsink.github.io/moosaic/reference/write_excel_report.md)
+  : Write the Excel report
+- [`write_msp()`](https://pbulsink.github.io/moosaic/reference/write_msp.md)
+  : Write components to an MSP file
+- [`write_pdf_report()`](https://pbulsink.github.io/moosaic/reference/write_pdf_report.md)
+  : Write the PDF report
