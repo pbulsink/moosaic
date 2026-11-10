@@ -1,0 +1,444 @@
+# Moosaic Operating Parameters
+
+``` r
+
+library(moosaic)
+```
+
+Every stage of the moosaic pipeline — reading and matrix building,
+detector alignment, FID peak detection, windowing, rank estimation, the
+MCR-ALS fit, identification scoring, and quantification — is controlled
+by `moosaic.*` options. This vignette lists each option with its default
+value and explains what it does in the pipeline.
+
+## How options are set
+
+All defaults live in a single place (`R/aaa-options.R`). When the
+package is loaded, only options that have *not* already been set receive
+their defaults, so values assigned in a project `.Rprofile` take
+precedence over package defaults:
+
+``` r
+
+options(
+  moosaic.rank_max = 4L,
+  moosaic.search_hits = 20L
+)
+```
+
+Within R sessions:
+
+- [`moosaic_options()`](https://pbulsink.github.io/moosaic/reference/moosaic_options.md)
+  returns the current values of all `moosaic.*` options.
+- `set_moosaic_options(...)` sets one or more options by name *without*
+  the `moosaic.` prefix; unknown names abort with an error of class
+  `moosaic-error-unknown_option`. Previous values are returned
+  invisibly.
+- [`reset_moosaic_options()`](https://pbulsink.github.io/moosaic/reference/reset_moosaic_options.md)
+  restores every option to its default, returning the previous values
+  invisibly.
+- Convenience setters add input checking on top:
+  [`specify_library()`](https://pbulsink.github.io/moosaic/reference/specify_library.md),
+  [`specify_search_params()`](https://pbulsink.github.io/moosaic/reference/specify_search_params.md),
+  [`specify_ri_calibration()`](https://pbulsink.github.io/moosaic/reference/specify_ri_calibration.md),
+  and
+  [`specify_identification_penalties()`](https://pbulsink.github.io/moosaic/reference/specify_identification_penalties.md).
+
+``` r
+
+moosaic_options()[c("moosaic.rank_max", "moosaic.align_engine")]
+#> $moosaic.rank_max
+#> [1] 6
+#> 
+#> $moosaic.align_engine
+#> [1] "xcorr"
+old <- set_moosaic_options(rank_max = 4L)   # names without the moosaic. prefix
+moosaic_options()[["moosaic.rank_max"]]
+#> [1] 4
+reset_moosaic_options()                     # restore all defaults
+```
+
+Most pipeline functions also accept per-call arguments that override the
+corresponding option (for example `align_detectors(exp, engine = ...)`,
+`estimate_rank(D, fid, methods = ..., max_rank = ...)` and
+`quantify(res, info, style = ...)`), which is useful when a single run
+needs to be reprocessed under different settings.
+
+## Library and search
+
+Options used by the identification stage
+([`identify_components()`](https://pbulsink.github.io/moosaic/reference/identify_components.md))
+when it searches deconvolved component spectra against NIST-format
+libraries through mspepsearchr.
+
+| Option | Default | Meaning |
+|----|----|----|
+| `moosaic.library_path` | `NULL` | List of NIST library directory paths (set with [`specify_library()`](https://pbulsink.github.io/moosaic/reference/specify_library.md)) |
+| `moosaic.search_function` | `"identity"` | MSPepSearch mode: `"identity"`, `"simple"`, `"hybrid"`, `"neutral_loss"` |
+| `moosaic.search_hits` | `10L` | Library hits retained per component query |
+| `moosaic.search_threads` | `1L` | Worker threads for the search executable |
+| `moosaic.ri_column_type` | `"semi-standard non-polar"` | RI scale reported by MSPepSearch: `"semi-standard non-polar"` or `"standard non-polar"` |
+| `moosaic.min_match_factor` | `600` | Minimum match factor for a candidate to be kept (and for reference-peak eligibility) |
+| `moosaic.ri_calibration_path` | `NULL` | Path of the ChemStation `.CAL` file used for observed RIs (set with [`specify_ri_calibration()`](https://pbulsink.github.io/moosaic/reference/specify_ri_calibration.md)) |
+| `moosaic.ri_extrapolate` | `FALSE` | Extrapolate RIs outside the calibrated range instead of returning `NA` |
+
+- **`moosaic.library_path`** — identification aborts with an error of
+  class `missing_library` when this is unset or empty, so it must be
+  designated before searching. Directories named `mainlib` and `replib`
+  are searched in a single batch; each additional library gets its own
+  search call and the per-query hits are merged (best match factor
+  first).
+- **`moosaic.search_function`** — selects the MSPepSearch mode:
+  `"identity"` matches on exact EI mass spectra
+  (`IdentitySearchEiNormal`), `"simple"` uses standard spectral
+  similarity scoring, `"hybrid"` adds weighting/penalties beyond simple
+  similarity, and `"neutral_loss"` scores agreement of the differences
+  between two spectra (useful for derivative classes). The default is
+  `"identity"` because deconvolution yields clean single-compound
+  spectra, where exact matching is most discriminating.
+- **`moosaic.search_hits`** — number of hits per query returned before
+  scoring; larger values keep more marginal candidates in the ranked hit
+  table at the cost of search time and report size.
+- **`moosaic.search_threads`** — worker threads passed to MSPepSearch,
+  capped at the number of queries searched in a batch.
+- **`moosaic.ri_column_type`** — must be `"semi-standard non-polar"`
+  (default) or `"standard non-polar"`. It fixes the retention-index
+  scale on which MSPepSearch reports each hit’s library RI, so that it
+  is comparable with the observed RI computed from
+  `moosaic.ri_calibration_path`. Set it to match the column type your
+  calibration ladder was generated for.
+- **`moosaic.min_match_factor`** — candidates whose NIST match factor is
+  below this are dropped before scoring. The same value gates internal
+  reference selection in
+  [`quantify()`](https://pbulsink.github.io/moosaic/reference/quantify.md):
+  a peak must score at least this high to be eligible as the Polyarc
+  reference, so raising it tightens both candidate filtering and
+  reference quality simultaneously.
+- **`moosaic.ri_calibration_path`** — used when no `ri_cal` argument is
+  passed explicitly to
+  [`identify_components()`](https://pbulsink.github.io/moosaic/reference/identify_components.md),
+  [`annotate_component()`](https://pbulsink.github.io/moosaic/reference/annotate_component.md),
+  or
+  [`process_sample()`](https://pbulsink.github.io/moosaic/reference/process_sample.md).
+  When unset (and no explicit file given), observed RIs are `NA`: the RI
+  penalty is zero but flagged as missing in each hit table.
+- **`moosaic.ri_extrapolate`** — with `FALSE` (default), retention times
+  outside the calibrated range produce `NA` RIs and a warning of class
+  `ri_out_of_range`; with `TRUE`, the nearest two references at each end
+  are extrapolated linearly instead.
+
+``` r
+
+specify_library(c(
+  "C:/NIST23/MSSEARCH/mainlib/",
+  "C:/NIST23/MSSEARCH/replib/"
+))
+specify_search_params(type = "identity", hits = 10L, threads = 1L)
+specify_ri_calibration("ONSITE.CAL")
+```
+
+## Matrix building
+
+Options that shape the scan-by-m/z data matrix each window is fitted on.
+
+| Option           | Default | Meaning                                         |
+|------------------|---------|-------------------------------------------------|
+| `moosaic.mz_min` | `35`    | Lowest m/z bin centre retained                  |
+| `moosaic.mz_max` | `500`   | Highest m/z considered when building the matrix |
+| `moosaic.mz_bin` | `1`     | Bin width (m/z units)                           |
+
+- **`moosaic.mz_min` / `moosaic.mz_max`** — ions outside this window are
+  dropped before rank estimation and the ALS fit. Raising `mz_min`
+  removes low m/z noise and solvent fragments; lowering it keeps them at
+  the cost of extra columns (and, for background detection, the air-ion
+  table is filtered by `mz_min`).
+- **`moosaic.mz_bin`** — fractional m/z values are assigned to the
+  nearest bin centre, and intensities falling in the same bin are
+  summed. Bins are centred on multiples of `mz_bin` starting at
+  `mz_min`, so with the defaults a peak at m/z 39.9 lands in the bin
+  for 40. A value below one is only useful when the instrument’s mass
+  resolution warrants it, since the matrix columns are what the ALS fit
+  decomposes.
+
+## Detector alignment
+
+Options used by
+[`align_detectors()`](https://pbulsink.github.io/moosaic/reference/align_detectors.md)
+to estimate the retention-time delay between the FID and the MS before
+any windowing.
+
+| Option | Default | Meaning |
+|----|----|----|
+| `moosaic.align_engine` | `"xcorr"` | Delay engine: `"xcorr"` or `"gcalignr"` |
+| `moosaic.max_delay` | `0.2` | Largest delay magnitude searched (min) |
+| `moosaic.align_step` | `0.001` | Common grid spacing for cross-correlation / shift step size (min) |
+
+- **`moosaic.align_engine`** — `"xcorr"` (default) maximises the
+  normalised cross-correlation of baseline-corrected FID and TIC traces
+  on a common grid; it is fast and depends only on the overall peak
+  pattern agreeing. `"gcalignr"` delegates to GCalignR peak-list
+  alignment, which models each detector’s resolved peaks explicitly
+  (useful when one dominant feature would dominate the
+  cross-correlation); it takes minutes for dense runs, so with this
+  engine the cheap xcorr estimate is additionally run as an independent
+  cross-check and a warning of class `engine_disagreement` is issued if
+  the two delays differ by more than one MS scan interval. If GCalignR
+  cannot be applied because fewer than two peaks are detected in either
+  trace, the package falls back to the xcorr result with a warning of
+  class `engine_fallback`.
+- **`moosaic.max_delay`** — search range for the delay: lags within ±
+  this many minutes are examined by cross-correlation and it is passed
+  as GCalignR’s maximum linear shift. It must exceed the true detector
+  delay; keep it small to avoid spurious correlations with peaks far
+  apart in time.
+- **`moosaic.align_step`** — spacing of the common interpolation grid
+  (and thus the lag resolution) for cross-correlation, and the shift
+  step size for the GCalignR engine. Finer values give a more precise
+  sub-grid delay estimate at proportional computational cost; the best
+  discrete lag is parabola-refined in either case.
+
+## FID peak detection
+
+Options used when peaks are detected on the *processed copy* of the FID
+trace
+([`detect_fid_peaks()`](https://pbulsink.github.io/moosaic/reference/detect_fid_peaks.md)).
+The raw FID is never modified — quantification always integrates raw
+areas — so these options affect window placement and rank votes, never
+measured amounts.
+
+| Option | Default | Meaning |
+|----|----|----|
+| `moosaic.fid_smooth_window` | `7L` | Savitzky–Golay smoothing window (FID points) on the detection copy |
+| `moosaic.fid_baseline_method` | `"rolling_min"` | Baseline correction for the detection copy: `"rolling_min"` or `"none"` |
+| `moosaic.peak_min_height_snr` | `5` | Minimum apex height, in noise multiples, for a detected peak (and FID rank vote) |
+
+- **`moosaic.fid_smooth_window`** — length of the Savitzky–Golay window
+  applied to the detection copy (cubic polynomial; must be odd and at
+  least 3). At the usual 50 Hz sampling rate, 7 points is about 0.14 s.
+  Larger windows suppress more noise but smear narrow peaks together or
+  flatten them below the height threshold.
+- **`moosaic.fid_baseline_method`** — `"rolling_min"` subtracts a
+  baseline estimated by morphological opening plus moving average, which
+  removes linear drift exactly and treats features narrower than the
+  window as signal; `"none"` applies no correction (appropriate when
+  `check_fid_baseline()` has confirmed the raw baseline is already
+  flat).
+- **`moosaic.peak_min_height_snr`** — a local maximum counts as an FID
+  peak only if its apex rises at least this multiple of the robust noise
+  estimate, and maxima that do not rise at least half this above their
+  neighbouring valley are discarded as noise. The same threshold gates
+  the `"fid"` rank vote inside each window (with a floor of 5% of the
+  trace range), so it influences both how many peaks are found and how
+  many components windows with shoulders receive.
+
+## Deconvolution windows
+
+Options used by
+[`detect_fid_windows()`](https://pbulsink.github.io/moosaic/reference/detect_fid_windows.md)
+when detected peaks are merged into the retention-time domains that
+MCR-ALS fits.
+
+| Option | Default | Meaning |
+|----|----|----|
+| `moosaic.window_padding` | `0.02` | Minutes added to each side of every peak (min) |
+| `moosaic.window_merge_gap` | `0.01` | Separation at or below which padded peaks merge into one window (min) |
+| `moosaic.min_scans_per_window` | `8L` | Minimum MS scans per window before a warning is issued |
+
+- **`moosaic.window_padding`** — minutes added to each side of every
+  detected peak before merging. Padding gives the fit slack for residual
+  sub-scan misalignment and for shoulder mass lying just outside the
+  detected bounds; it should be larger than the expected alignment error
+  but small enough not to pull in neighbouring resolved peaks (those
+  stay separate unless the padded intervals fall within
+  `moosaic.window_merge_gap`).
+- **`moosaic.window_merge_gap`** — two padded peaks whose intervals are
+  separated by at most this many minutes are merged into a single
+  deconvolution window; wider separations start a new one.
+- **`moosaic.min_scans_per_window`** — windows containing fewer MS scans
+  than this emit a warning of class `few_scans` but are still processed.
+  The limit exists because MCR-ALS needs enough rows to support the
+  estimated rank (plus the background column when enabled); very small
+  windows are exactly where fits tend to be weakest, so their components
+  carry low rank confidence in the reports.
+
+## Rank estimation
+
+Options used by
+[`estimate_rank()`](https://pbulsink.github.io/moosaic/reference/estimate_rank.md),
+which votes across independent methods for the number of analyte
+components in each window.
+
+| Option | Default | Meaning |
+|----|----|----|
+| `moosaic.rank_methods` | `c("fid", "svd", "bic", "pa")` | Methods taking part in the rank vote |
+| `moosaic.rank_max` | `6L` | Upper bound on components per window |
+| `moosaic.svd_var_threshold` | `0.99` | Cumulative explained variance required by the `"svd"` vote |
+| `moosaic.pa_iterations` | `50L` | Column permutations in parallel analysis (`"pa"`) |
+
+- **`moosaic.rank_methods`** — any subset of `"fid"` (peak count on the
+  window’s FID trace), `"svd"` (cumulative explained variance from the
+  singular value decomposition), `"bic"` (Bayesian information criterion
+  over rank-r reconstructions) and `"pa"` (parallel analysis). The
+  consensus is a majority vote; its confidence — the share of votes
+  agreeing with it — travels with each component into the reports.
+  Parallel analysis is by far the slowest method, so it runs only when
+  at least two other methods gave usable votes that do not all agree;
+  because it uses random permutations, call
+  [`set.seed()`](https://rdrr.io/r/base/Random.html) first for
+  reproducible results.
+- **`moosaic.rank_max`** — no window may be fitted with more analyte
+  components than this (votes above the cap are truncated); it is
+  reduced to the smaller dimension of the window matrix with a message
+  if that is less. Raise it only for genuinely overloaded co-elutions,
+  since each extra component costs ALS iterations and identifiability.
+- **`moosaic.svd_var_threshold`** — the `"svd"` vote returns the
+  smallest number of singular components whose cumulative squared
+  singular values reach this fraction of the total. The decomposition is
+  uncentred, so a constant background counts as the first component; on
+  noisy data the vote leans high and that is why it is one of several
+  rather than the decider.
+- **`moosaic.pa_iterations`** — number of column-permuted null matrices
+  used to build the reference distribution for parallel analysis (the
+  rank estimate is the count of leading singular values above its 95th
+  percentile). More iterations tighten the reference at linear cost;
+  fewer make the vote noisier.
+
+## MCR-ALS fit
+
+Options passed into [`ALS::als()`](https://rdrr.io/pkg/ALS/man/als.html)
+when each window is resolved by constrained non-negative alternating
+least squares
+([`fit_window()`](https://pbulsink.github.io/moosaic/reference/fit_window.md),
+via
+[`process_window()`](https://pbulsink.github.io/moosaic/reference/process_window.md)/[`deconvolve_run()`](https://pbulsink.github.io/moosaic/reference/deconvolve_run.md)).
+
+| Option | Default | Meaning |
+|----|----|----|
+| `moosaic.background_component` | `TRUE` | Fit a flat background column (column bleed, air ions) alongside the analytes |
+| `moosaic.als_maxiter` | `100L` | Maximum ALS iterations per window |
+| `moosaic.als_thresh` | `0.001` | Relative RSS change below which iteration stops |
+| `moosaic.als_unimodal` | `TRUE` | Constrain concentration profiles to be unimodal (peak-shaped) |
+
+- **`moosaic.background_component`** — when `TRUE`, a flat background
+  column is appended as the final column of every fit, so a window of
+  estimated rank *r* actually fits *r* + 1 columns; that last column is
+  exempt from the unimodality constraint and models constant
+  interference (column bleed, air ions) while the analyte profiles
+  remain peak-shaped. In tiny windows one degree of freedom is reserved
+  for it before fitting. Set `FALSE` only when a run demonstrably has no
+  such background; otherwise its signal would be forced into the analyte
+  spectra and distort them.
+- **`moosaic.als_maxiter`** — iteration ceiling per window.
+  Non-convergence within this many iterations is reported as a warning
+  and the best solution found is still returned, so raising it helps
+  slow-to-converge windows at proportional cost.
+- **`moosaic.als_thresh`** — alternating least squares stops when the
+  relative change in residual sum of squares falls below this value.
+  Smaller values converge more tightly; larger ones save iterations on
+  already-resolved fits.
+- **`moosaic.als_unimodal`** — with `TRUE` (default) each concentration
+  profile is constrained to a single peak, which matches chromatographic
+  elution and removes the most dangerous indeterminacies of bilinear
+  decomposition. Set `FALSE` only when measured profiles are genuinely
+  multi-modal and unimodality visibly distorts the fit; expect weaker
+  identifiability in return.
+
+## Identification scoring
+
+Options that turn raw library hits into ranked candidate identifiers.
+Each candidate’s final score is its match factor minus a retention-index
+penalty minus an element penalty
+(`final = mf − ri_penalty − element_penalty`), and candidates are
+ordered by it within each component.
+
+| Option | Default | Meaning |
+|----|----|----|
+| `moosaic.ri_grace` | `10` | RI difference up to this incurs no penalty (RI units) |
+| `moosaic.ri_penalty_per_unit` | `1` | Penalty per unit of RI difference beyond the grace band |
+| `moosaic.element_penalties` | `c(N = 50, S = 50, Cl = 100, Br = 100, Si = 25, P = 100)` | Per-atom penalty for elements named here |
+| `moosaic.allowed_elements` | `c("C", "H", "O", "N", "S")` | Elements that may appear without the default penalty |
+| `moosaic.disallowed_element_penalty` | `100` | Per-atom penalty for an element in neither of the two lists above |
+
+All five are configured together with
+[`specify_identification_penalties()`](https://pbulsink.github.io/moosaic/reference/specify_identification_penalties.md).
+
+- **`moosaic.ri_grace`** — differences between observed and library RI
+  up to this many units are not penalised at all, absorbing normal
+  column-to-column and day-to-day RI variation.
+- **`moosaic.ri_penalty_per_unit`** — each unit of RI difference
+  *beyond* the grace band costs this much score (so a 25-unit mismatch
+  with the defaults loses `1 × (25 − 10) = 15`). Missing RIs (no
+  calibration, or out-of-range with `moosaic.ri_extrapolate = FALSE`)
+  incur zero penalty but are flagged as missing in each hit table so
+  their score is recognisably RI-unverified.
+- **`moosaic.element_penalties`** — named vector giving the per-atom
+  penalty for elements you expect to see but would rather not: with the
+  defaults, N and S cost 50 per atom, Si costs 25, and Cl, Br and P
+  cost 100. A listed element incurs its own penalty even if it also
+  appears in `moosaic.allowed_elements` — the explicit list takes
+  precedence.
+- **`moosaic.allowed_elements`** — elements that may occur without any
+  default penalty; with the defaults C, H and O are therefore free (N
+  and S carry their listed per-atom penalties because they are also in
+  `element_penalties`). To make an element entirely unpenalised, remove
+  it from `element_penalties` and keep it in `allowed_elements`.
+- **`moosaic.disallowed_element_penalty`** — each atom of an element
+  that is in *neither* list (for example F or Na with the defaults)
+  costs this much score, so structurally implausible candidates are
+  demoted regardless of spectral similarity.
+
+``` r
+
+specify_identification_penalties(
+  ri_grace = 10,
+  ri_penalty_per_unit = 1,
+  element_penalties = c(N = 50, S = 50),
+  allowed_elements = c("C", "H", "O", "N", "S")
+)
+```
+
+## Quantification
+
+| Option | Default | Meaning |
+|----|----|----|
+| `moosaic.quant_style` | `"internal"` | Polyarc style: `"internal"`, `"slope"`, `"slope_intercept"`, or `"quadratic"` |
+
+**`moosaic.quant_style`** — the quantification model used by
+[`quantify()`](https://pbulsink.github.io/moosaic/reference/quantify.md)
+when no `style` argument is given. With `"internal"` (default), every
+component’s mass is computed relative to an internal reference peak from
+its raw FID area, the carbon counts and molar masses of both compounds;
+amounts are normalised so that the run totals 100 wt% (`1e6 × density`
+µg/mL), and the reference — chosen as the largest well-identified peak
+(score at least `moosaic.min_match_factor`, not a combined peak, free of
+halogens/P/Si) unless you name one with `quantify(reference_peak = ...)`
+— is marked `"Target"`. The external styles (`"slope"`,
+`"slope_intercept"`, `"quadratic"`) instead read the calibration targets
+found in the sample off their fitted curves (scaled by the dilution
+factor from
+[`sample_info()`](https://pbulsink.github.io/moosaic/reference/sample_info.md)),
+and scale every other peak from the nearest preceding target of the same
+compound type; they use the calibration targets and points bundled with
+the package.
+
+## Setting options for a whole project
+
+Because `.onLoad()` only fills in names that are unset, the cleanest way
+to pin a project’s configuration is a `.Rprofile` (or a script sourced
+at session start) next to the data:
+
+``` r
+
+options(
+  moosaic.library_path   = list("C:/NIST23/MSSEARCH/mainlib/", "C:/NIST23/MSSEARCH/replib/"),
+  moosaic.ri_column_type = "semi-standard non-polar",
+  moosaic.rank_max       = 4L,
+  moosaic.search_hits    = 20L
+)
+```
+
+Everything else can then be tuned per session with
+[`set_moosaic_options()`](https://pbulsink.github.io/moosaic/reference/set_moosaic_options.md)
+or the `specify_*` helpers and returned to the package defaults at any
+time with
+[`reset_moosaic_options()`](https://pbulsink.github.io/moosaic/reference/reset_moosaic_options.md).

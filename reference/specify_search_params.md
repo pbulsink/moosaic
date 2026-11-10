@@ -32,7 +32,8 @@ specify_search_params(
 
 - ri_column_type:
 
-  Character; RI column type string (must be recognized by mspepsearchr).
+  Character; RI column type reported by MSPepSearch:
+  `"semi-standard non-polar"` or `"standard non-polar"`.
 
 - min_match_factor:
 

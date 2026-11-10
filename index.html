@@ -33,6 +33,12 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="articles/moosaic-params.html">Moosaic Operating Parameters</a></li>
+  </ul>
+</li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -45,8 +51,180 @@
   </div>
 </nav><div class="container template-home">
 <div class="row">
-  <main id="main" class="col-md-9">
-Automated data extraction, deconvolution, and spectral searching for GC-FID/MS data.
+  <main id="main" class="col-md-9"><div class="section level1">
+<div class="page-header">
+<img src="logo.png" class="logo" alt=""><h1 id="moosaic">moosaic<a class="anchor" aria-label="anchor" href="#moosaic"></a>
+</h1>
+</div>
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+</div>
+<div class="section level1">
+<h1 id="moosaic-">moosaic <a href="https://github.com/pbulsink/moosaic" class="external-link"><img scr="man/figures/logo.png" align="right" height="139" alt="moosaic logo" src="NA"></a>
+<a class="anchor" aria-label="anchor" href="#moosaic-"></a>
+</h1>
+<div class="section level2">
+<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+</h2>
+<p><strong>moosaic</strong> provides automated data extraction, deconvolution, and spectral searching for gas chromatography data acquired on combined FID/MS instruments. Given the raw ChemStation files of a single run (a <code>.ch</code> file for the flame ionisation detector and a <code>.ms</code> file for the mass spectrometer), the package executes the complete analytical workflow:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Reading</strong> — <code><a href="reference/read_experiment.html">read_experiment()</a></code> ingests both detector files via chromConverter and assembles a validated <code>gcms_fid_exp</code> object in which the raw signals are preserved unmodified.</li>
+<li>
+<strong>Alignment</strong> — <code><a href="reference/align_detectors.html">align_detectors()</a></code> estimates the retention-time delay between the two detectors (see <a href="#detector-alignment">Detector alignment</a>).</li>
+<li>
+<strong>Windowing</strong> — peaks and shoulders are detected on a processed copy of the FID trace, merged into deconvolution windows by <code><a href="reference/detect_fid_windows.html">detect_fid_windows()</a></code>.</li>
+<li>
+<strong>Deconvolution</strong> — each window is resolved into its constituent components by constrained non-negative multivariate curve resolution (MCR-ALS; see <a href="#multivariate-deconvolution">Multivariate deconvolution</a>).</li>
+<li>
+<strong>Identification</strong> — component spectra are searched against NIST-format libraries through mspepsearchr, and candidates are ranked by a composite score that combines the spectral match factor with retention-index and elemental-composition penalties (<code><a href="reference/identify_components.html">identify_components()</a></code>).</li>
+<li>
+<strong>Quantification</strong> — identified components are quantified by the Polyarc method using raw FID peak areas (<code><a href="reference/quantify.html">quantify()</a></code>).</li>
+<li>
+<strong>Reporting</strong> — <code><a href="reference/summarize_report.html">summarize_report()</a></code>, <code><a href="reference/write_excel_report.html">write_excel_report()</a></code>, and <code><a href="reference/write_pdf_report.html">write_pdf_report()</a></code> produce a compound table, a multi-sheet Excel workbook, or a rendered PDF report.</li>
+</ol>
+<p>The entire sequence may be invoked in a single call through <code><a href="reference/process_sample.html">process_sample()</a></code>.</p>
+</div>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<p>moosaic is distributed from source. From the package directory (or an extracted tarball), install with:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"path/to/moosaic"</span><span class="op">)</span></span></code></pre></div>
+<p>or, when working with a local checkout during development,</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">load_all</span><span class="op">(</span><span class="op">)</span>   <span class="co"># load without installing</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_local</span><span class="op">(</span><span class="op">)</span>  <span class="co"># build and install</span></span></code></pre></div>
+<p>The package imports the following packages from CRAN: <code>ALS</code> (the MCR-ALS solver), <code>chromConverter</code> (used to read Chemstation .ms and .ch files), <code>cli</code>, <code>Matrix</code>, <code>openxlsx</code>, <code>tibble</code>, <code>rlang</code>, and <code>stats</code>. They aren installed automatically when moosaic is installed.</p>
+<p>Two capabilities depend on optional packages:</p>
+<ul>
+<li>
+<p><strong>Library search</strong> requires <code>mspepsearchr</code>, a wrapper around NIST MSPepSearch distributed only from GitHub (<code>Remotes: andreysamokhin/mspepsearchr</code>). The underlying executable is native to Windows; on other platforms it must be run through a compatibility layer. Install it with, for example,</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"andreysamokhin/mspepsearchr"</span><span class="op">)</span></span></code></pre></div>
+<p>and designate one or more NIST-format library directories before searching:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">moosaic</span><span class="fu">::</span><span class="fu"><a href="reference/specify_library.html">specify_library</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="st">"C:/NIST23/MSSEARCH/mainlib/"</span>,</span>
+<span>  <span class="st">"C:/NIST23/MSSEARCH/replib/"</span></span>
+<span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</li>
+<li><p><strong>PDF reports</strong> require <code>quarto</code>, which renders the report template shipped in <code>inst/report/</code>. Install it from <a href="https://quarto.org" class="external-link uri">https://quarto.org</a> if PDF output is required; Excel reporting does not depend on it.</p></li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
+</h2>
+<p>The one-call entry point reads a run, aligns the detectors, deconvolves every window, identifies and quantifies the components, and summarises the result:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pbulsink.github.io/moosaic/">moosaic</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sample_info.html">sample_info</a></span><span class="op">(</span><span class="st">"S1"</span>, density <span class="op">=</span> <span class="fl">0.85</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/process_sample.html">process_sample</a></span><span class="op">(</span></span>
+<span>  ms_file    <span class="op">=</span> <span class="st">"run.ms"</span>,</span>
+<span>  fid_file   <span class="op">=</span> <span class="st">"run.ch"</span>,</span>
+<span>  info       <span class="op">=</span> <span class="va">info</span>,</span>
+<span>  ri_cal     <span class="op">=</span> <span class="st">"ONSITE.CAL"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/total_compound_table.html">total_compound_table</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/write_excel_report.html">write_excel_report</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="reference/sample_info.html">sample_info()</a></code> collects the sample metadata (identifier, density, and any calibration information) used by quantification and the reports. An RI calibration file in ChemStation <code>.CAL</code> format — whitespace-delimited lines of retention time, retention index, and reference name — may be supplied to enable RI-based scoring; it is parsed and validated by <code><a href="reference/read_ri_calibration.html">read_ri_calibration()</a></code>.</p>
+<p>For workflows that require inspection or custom handling between stages, each stage is also exposed individually:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_experiment.html">read_experiment</a></span><span class="op">(</span><span class="st">"run.ms"</span>, <span class="st">"run.ch"</span><span class="op">)</span>   <span class="co"># gcms_fid_exp object</span></span>
+<span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/align_detectors.html">align_detectors</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span>                  <span class="co"># estimate FID/MS delay</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/deconvolve_run.html">deconvolve_run</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span>                   <span class="co"># components per window</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/identify_components.html">identify_components</a></span><span class="op">(</span><span class="va">res</span>, ri_cal <span class="op">=</span> <span class="st">"ONSITE.CAL"</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/quantify.html">quantify</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">info</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/summarize_report.html">summarize_report</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
+<p>Behaviour is controlled through options. Defaults are defined in a single place and may be inspected and modified as follows:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/moosaic_options.html">moosaic_options</a></span><span class="op">(</span><span class="op">)</span>                            <span class="co"># current values</span></span>
+<span><span class="fu"><a href="reference/set_moosaic_options.html">set_moosaic_options</a></span><span class="op">(</span>rank_max <span class="op">=</span> <span class="fl">4L</span><span class="op">)</span>           <span class="co"># set one or more, validated</span></span>
+<span><span class="fu"><a href="reference/specify_search_params.html">specify_search_params</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"identity"</span>, hits <span class="op">=</span> <span class="fl">10L</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/reset_moosaic_options.html">reset_moosaic_options</a></span><span class="op">(</span><span class="op">)</span>                      <span class="co"># restore all defaults</span></span></code></pre></div>
+<p>Because option defaults are applied only to names that have not already been set, values assigned in a project <code>.Rprofile</code> take precedence over package defaults.</p>
+</div>
+<div class="section level2">
+<h2 id="multivariate-deconvolution">Multivariate deconvolution<a class="anchor" aria-label="anchor" href="#multivariate-deconvolution"></a>
+</h2>
+<div class="section level3">
+<h3 id="the-mixing-model">The mixing model<a class="anchor" aria-label="anchor" href="#the-mixing-model"></a>
+</h3>
+<p>In gas chromatography the elution profiles of co-eluting compounds overlap, so that within a retention-time window the mass spectrometer records, at each scan and m/z channel, the spectra of every compound present. Provided the response is linear — which holds for both FID and (less so) the MS at ordinary concentrations — the data matrix <strong>D</strong> (scans by m/z channels) over such a window admits the factorisation</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝐃</mi><mo>=</mo><mi>𝐂</mi><mspace width="0.167em"></mspace><msup><mi>𝐒</mi><mi>⊤</mi></msup><mo>+</mo><mi>𝐄</mi><mo>,</mo></mrow><annotation encoding="application/x-tex"> \mathbf{D} = \mathbf{C}\,\mathbf{S}^{\top} + \mathbf{E}, </annotation></semantics></math></p>
+<p>where the columns of <strong>C</strong> are the concentration profiles of the individual components, the columns of <strong>S</strong> their mass spectra, and <strong>E</strong> an error or background term. Resolving a co-eluting mixture is therefore a bilinear decomposition problem. The difficulty is that the factorisation is not unique: infinitely many pairs (<strong>C</strong>, <strong>S</strong>) reproduce <strong>D</strong>. Physical constraints remove most of this indeterminacy. Concentrations in time and spectral intensities are non-negative; chromatographic peaks are unimodal; and — for a run with two detectors — the concentration profiles are known, to first order, from the FID trace, which responds approximately uniformly to all carbon-containing eluting material regardless of structure. moosaic applies exactly these constraints through multivariate curve resolution by alternating least squares (MCR-ALS), as implemented in <code><a href="https://rdrr.io/pkg/ALS/man/als.html" class="external-link">ALS::als()</a></code>.</p>
+</div>
+<div class="section level3">
+<h3 id="why-the-fid-guides-the-windowing-and-rank">Why the FID guides the windowing and rank<a class="anchor" aria-label="anchor" href="#why-the-fid-guides-the-windowing-and-rank"></a>
+</h3>
+<p>The MS alone does not reveal how many compounds share a peak: two structurally dissimilar co-eluters may produce few or no shared m/z channels, so that dimensionality-based methods can under-estimate the number of components. The FID, by contrast, integrates every eluting carbon compound into a single trace; a shoulder on the FID is evidence of an additional component even when its mass spectrum bears little resemblance to its neighbours. moosaic therefore detects peaks and shoulders on a processed copy of the raw FID (baseline correction, Savitzky–Golay smoothing, second-derivative shoulder detection), merges nearby peaks into deconvolution windows with a small padding, and uses these windows as the fitting domains. The raw FID is never altered; it remains available for the subsequent Polyarc integration, so that quantification operates on measured area rather than on fitted values.</p>
+<p>Within each window the number of components is estimated by <code><a href="reference/estimate_rank.html">estimate_rank()</a></code>, which takes a majority vote across four independent methods: the peak count on the FID trace (<code>"fid"</code>), cumulative explained variance from the singular value decomposition (<code>"svd"</code>), the Bayesian information criterion over rank-r reconstructions (<code>"bic"</code>), and parallel analysis with column permutations (<code>"pa"</code>). Voting over heterogeneous estimators is deliberately conservative: a single misleading method does not determine the outcome, and the resulting confidence value (the share of votes agreeing with the consensus) is reported with every component so that weak assignments are visible in the final table.</p>
+</div>
+<div class="section level3">
+<h3 id="initial-profiles-and-constraints">Initial profiles and constraints<a class="anchor" aria-label="anchor" href="#initial-profiles-and-constraints"></a>
+</h3>
+<p>MCR-ALS alternates least-squares updates of <strong>C</strong> (given fixed <strong>S</strong>) and of <strong>S</strong> (given fixed <strong>C</strong>), enforcing non-negativity at each step; it converges to a local solution whose quality depends on the initial estimates. moosaic constructs both from data rather than assumption:</p>
+<ul>
+<li>The initial concentration matrix <strong>C0</strong> is built by <code><a href="reference/build_constraints.html">build_constraints()</a></code>. The FID trace resampled onto the window’s MS scans is segmented into one region per component, and each column of <strong>C0</strong> is the <em>measured</em> FID profile restricted to its segment (zero elsewhere), scaled to a maximum of one. Using measured profiles rather than assumed peak shapes means the fit does not presuppose symmetric, Gaussian elution; asymmetric or tailing peaks are accommodated because their shape enters through <strong>C0</strong> and is then refined by the alternating iterations subject only to non-negativity — and unimodality, when enabled via <code>moosaic.als_unimodal</code>.</li>
+<li>The initial spectra matrix <strong>S0</strong> is obtained from the leading right singular vectors of the window’s MS data matrix (<code>build_s0()</code>), made non-negative and scaled to a maximum intensity of one.</li>
+</ul>
+<p>An optional flat background component (column bleed, air ions) may be appended as a final column; with <code>baseline = TRUE</code> in <code><a href="https://rdrr.io/pkg/ALS/man/als.html" class="external-link">ALS::als()</a></code>, that last column is exempted from the unimodality constraint, which permits it to model constant interference while the analyte profiles remain peak-shaped. The fit returns, in addition to <strong>C</strong> and <strong>S</strong>, a set of diagnostics — lack-of-fit percentage, R², iteration count, convergence flag, and per-component explained variance — so that windows whose solutions are poor can be identified from the reports rather than silently accepted. Non-convergence within <code>moosaic.als_maxiter</code> iterations is reported as a warning and the best available solution is still returned.</p>
+<p>Finally, because quantification must use measured FID area, the raw window area is apportioned among the fitted components in proportion to each component’s share of the fitted signal at every scan (<code><a href="reference/dot-apportion_fid_area.html">.apportion_fid_area()</a></code>); the apportioned areas sum exactly to the raw integrated area.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="detector-alignment">Detector alignment<a class="anchor" aria-label="anchor" href="#detector-alignment"></a>
+</h2>
+<div class="section level3">
+<h3 id="why-alignment-is-required">Why alignment is required<a class="anchor" aria-label="anchor" href="#why-alignment-is-required"></a>
+</h3>
+<p>The FID and the mass spectrometer sit in parallel after the column, with post- column splitting and transfer of flow through two different transfer lines. Consequently the two detectors record the same eluting compound at slightly different retention times, typically a delay of the order of tens to hundreds of milliseconds. While a theoretical alignment delay can be calculated, it’s analytically more robust to discover the delay empirically.</p>
+<p>Deconvolution windows are defined from the FID trace but fitted against the MS data matrix on its own scan grid. If the delay were ignored, each window would be shifted relative to the mass spectral signal it is meant to resolve: the concentration profiles derived from the FID could no longer coincide with the ion abundances in <strong>D</strong>, and the ALS fit would either fail or converge to an incorrect solution that smears components across one another. The delay must therefore be estimated before any windowing, and it is recorded on the experiment object so that all downstream use of MS retention times subtracts a single, consistently determined offset. Raw time stamps in both files are left untouched at every stage; alignment is applied by the dedicated <code><a href="reference/dot-apply_alignment.html">.apply_alignment()</a></code> helper wherever MS times enter a calculation.</p>
+</div>
+<div class="section level3">
+<h3 id="cross-correlation-engine-default">Cross-correlation engine (default)<a class="anchor" aria-label="anchor" href="#cross-correlation-engine-default"></a>
+</h3>
+<p>The default engine (<code>moosaic.align_engine = "xcorr"</code>) estimates the delay as the lag that maximises the normalised cross-correlation between the FID trace and the total ion current of the MS, which is read directly from the data file:</p>
+<ol style="list-style-type: decimal">
+<li>Both traces are interpolated onto a common grid over their overlapping range (grid spacing given by <code>moosaic.align_step</code>, default 0.001 min).</li>
+<li>A baseline estimate is subtracted from each trace so that drift does not bias the correlation.</li>
+<li>The normalised cross-correlation is evaluated for every quantized lag within ± <code>moosaic.max_delay</code> (default 0.2 min); the normalisation makes the score invariant to the differing dynamic ranges and units of the two detectors (pA versus ion counts).</li>
+<li>The best discrete lag is refined by fitting a parabola through it and its two neighbours, yielding a sub-grid delay estimate with an uncertainty well below one MS scan interval.</li>
+</ol>
+<p>Cross-correlation is appropriate here because the FID and TIC are, up to the delay and response (scaling) factor, near replicas of one another: both integrate all eluting material over the same chromatographic sequence, so their peak patterns — not their absolute amplitudes — carry the alignment information. The method is c omputationallynegligible even for dense runs (tens of thousands of FID points against tens of thousands of MS scans) and does not depend on any particular peak being present in both traces; it suffices that the pattern as a whole correlates, which holds for chromatographic data with more than a handful of resolved peaks. The delay and its correlation score are stored in <code>exp$alignment</code>, and windows carry padding (<code>moosaic.window_padding</code>) precisely to tolerate any residual misfit at sub-scan level.</p>
+</div>
+<div class="section level3">
+<h3 id="gcalignr-engine-opt-in">GCalignR engine (opt-in)<a class="anchor" aria-label="anchor" href="#gcalignr-engine-opt-in"></a>
+</h3>
+<p>The alternative engine (<code>engine = "gcalignr"</code>) delegates estimation to GCalignR: peaks are detected independently on the FID and TIC, converted into peak lists (retention time and area), and aligned by <code><a href="https://rdrr.io/pkg/GCalignR/man/align_chromatograms.html" class="external-link">GCalignR::align_chromatograms()</a></code>, whose linear-shift estimate is returned as the delay. Peak-list alignment models each detector’s resolved peaks explicitly rather than correlating whole traces, which can be advantageous when a single dominant feature (for example the solvent front) would otherwise dominate a cross-correlation. Two safeguards accompany this engine:</p>
+<ul>
+<li>Because peak-list alignment is more costly — on the order of minutes for dense runs — it is not run by default;</li>
+<li>whenever it is used, the inexpensive cross-correlation estimate is computed as an independent cross-check, and a warning (class <code>engine_disagreement</code>) is issued if the two estimates differ by more than one MS scan interval. If GCalignR cannot be applied because fewer than two peaks are detected in either trace, the package falls back to the cross-correlation result with a warning of class <code>engine_fallback</code>, so that the pipeline degrades gracefully rather than failing.</li>
+</ul>
+<p>Either way, the outcome is a single scalar delay (in minutes, positive when MS times lag FID times) together with the engine and score used, all recorded on the experiment for auditability in the reports.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="quantification-and-reporting">Quantification and reporting<a class="anchor" aria-label="anchor" href="#quantification-and-reporting"></a>
+</h2>
+<p>Quantification follows the Polyarc method: each identified component’s mass is computed relative to an internal reference peak from its raw FID area, the reference concentration, and the molecular weights of both compounds; no smoothing or re-integration of processed data enters this step. Identification scores combine the library match factor with a retention-index penalty (with a grace band around the library RI) and an elemental penalty for formulas outside the allowed element set, so that chemically implausible candidates are demoted regardless of spectral similarity. <code><a href="reference/summarize_report.html">summarize_report()</a></code> assembles families, element balances, totals, and explanatory notes; <code><a href="reference/write_excel_report.html">write_excel_report()</a></code> emits a multi-sheet workbook via openxlsx, and <code><a href="reference/write_pdf_report.html">write_pdf_report()</a></code> renders the Quarto template in <code>inst/report/</code>.</p>
+</div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<ul>
+<li>Tauler, R.; <em>Chemometrics and Intelligent Laboratory Systems</em> 30, (1), 133-146 (1995)</li>
+<li>Jonsson, P.; Johansson, A. I.; Gullberg, J.; Trygg, J.; A, J.; Grung, B.; Marklund, S.; Sjostrom, M.; Antti, H.; Moritz, T.; <em>Analytical Chemistry</em> 77 (17) 5635-5642 (2005)</li>
+<li>van Stokkum I. H. M.; Mullen, K. M.; Mihaleva, V. V.; <em>Chemometrics and Intelligent Laboratory Systems</em> 95, 150-163 (2009)</li>
+<li>Beach, C. A.; Krumm, C.; Spanjers, C. S.; Maduskar, S.; Jones, A. J.; Dauenhauer, P. J.; <em>Analyst</em> 141 (5) 1627-1632 (2016)</li>
+<li>Dalmau, N.; Bedia, C.; Tauler, R.; <em>Anal. Chim. Acta</em> 1025, 80-91
+<ol start="2018" style="list-style-type: decimal"><li>
+</li></ol>
+</li>
+</ul>
+</div>
+</div>
+
   </main><aside class="col-md-3"><div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">

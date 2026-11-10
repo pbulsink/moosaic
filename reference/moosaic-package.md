@@ -3,8 +3,11 @@
 Automated data extraction, deconvolution, and spectral searching for
 GC-FID/MS data.
 
-Automated data extraction, deconvolution, and spectral searching for
-GC-FID/MS data.
+## See also
+
+Useful links:
+
+- <https://pbulsink.github.io/moosaic/>
 
 ## Author
 

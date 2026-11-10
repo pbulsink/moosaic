@@ -1,7 +1,9 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://pbulsink.github.io/moosaic/404.html</loc></url>
+<url><loc>https://pbulsink.github.io/moosaic/AGENTS.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/LICENSE.html</loc></url>
-<url><loc>https://pbulsink.github.io/moosaic/SPEC.html</loc></url>
+<url><loc>https://pbulsink.github.io/moosaic/articles/index.html</loc></url>
+<url><loc>https://pbulsink.github.io/moosaic/articles/moosaic-params.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/authors.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/index.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/align_detectors.html</loc></url>

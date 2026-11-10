@@ -81,7 +81,7 @@ sample_info("S1", density = 0.85, analyst = c("A", "B"))
 #> [1] 1
 #> 
 #> $report_date
-#> [1] "2026-11-07"
+#> [1] "2026-11-10"
 #> 
 #> attr(,"class")
 #> [1] "moosaic_sample"
