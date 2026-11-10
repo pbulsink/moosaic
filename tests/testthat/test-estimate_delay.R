@@ -15,10 +15,35 @@ test_that(".estimate_delay() dispatches to each engine and labels the result", {
   x <- .estimate_delay(fid, tic, "xcorr", 0.2, 0.001)
   expect_equal(x$engine, "xcorr")
   expect_equal(x$delay, 0.05, tolerance = 0.03)
+  skip_if_not_installed("GCalignR")
   g <- .estimate_delay(fid, tic, "gcalignr", 0.2, 0.005)
   expect_equal(g$engine, "gcalignr")
   expect_true(is.na(g$score))
   expect_equal(g$delay, 0.05, tolerance = 0.1)
+})
+
+test_that(".estimate_delay() falls back to xcorr with a warning when GCalignR is missing", {
+  local_mocked_bindings(is_installed = \(...) FALSE, .package = "rlang")
+  local_mocked_bindings(
+    .estimate_delay_gcalignr = \(...) stop("GCalignR should not run")
+  )
+  fid <- mk_trace(seq(0, 10, by = 0.0003), 0)
+  tic <- mk_trace(seq(0, 10, by = 0.0045), 0.05)
+  expect_warning(
+    out <- .estimate_delay(fid, tic, "gcalignr", 0.2, 0.001),
+    class = "moosaic-warning-missing_package"
+  )
+  expect_equal(out$engine, "xcorr")
+})
+
+test_that(".estimate_delay() does not check for GCalignR when using xcorr", {
+  local_mocked_bindings(
+    is_installed = \(...) stop("should not be checked"),
+    .package = "rlang"
+  )
+  fid <- mk_trace(seq(0, 10, by = 0.0003), 0)
+  tic <- mk_trace(seq(0, 10, by = 0.0045), 0.05)
+  expect_no_error(.estimate_delay(fid, tic, "xcorr", 0.2, 0.001))
 })
 
 test_that(".estimate_delay() aborts on an unknown engine", {

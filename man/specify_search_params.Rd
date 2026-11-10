@@ -19,7 +19,8 @@ specify_search_params(
 
 \item{threads}{Integer; number of threads for parallel search (default from options).}
 
-\item{ri_column_type}{Character; RI column type string (must be recognized by mspepsearchr).}
+\item{ri_column_type}{Character; RI column type reported by MSPepSearch:
+\code{"semi-standard non-polar"} or \code{"standard non-polar"}.}
 
 \item{min_match_factor}{Integer; minimum match factor to report (default from options).}
 }

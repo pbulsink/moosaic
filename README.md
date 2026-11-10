@@ -1,0 +1,351 @@
+moosaic
+================
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# moosaic <a href = "https://github.com/pbulsink/moosaic"><img scr="man/figures/logo.png" align="right" height="139" alt = "moosaic logo"></a>
+
+## Overview
+
+**moosaic** provides automated data extraction, deconvolution, and
+spectral searching for gas chromatography data acquired on combined
+FID/MS instruments. Given the raw ChemStation files of a single run (a
+`.ch` file for the flame ionisation detector and a `.ms` file for the
+mass spectrometer), the package executes the complete analytical
+workflow:
+
+1.  **Reading** — `read_experiment()` ingests both detector files via
+    chromConverter and assembles a validated `gcms_fid_exp` object in
+    which the raw signals are preserved unmodified.
+2.  **Alignment** — `align_detectors()` estimates the retention-time
+    delay between the two detectors (see [Detector
+    alignment](#detector-alignment)).
+3.  **Windowing** — peaks and shoulders are detected on a processed copy
+    of the FID trace, merged into deconvolution windows by
+    `detect_fid_windows()`.
+4.  **Deconvolution** — each window is resolved into its constituent
+    components by constrained non-negative multivariate curve resolution
+    (MCR-ALS; see [Multivariate
+    deconvolution](#multivariate-deconvolution)).
+5.  **Identification** — component spectra are searched against
+    NIST-format libraries through mspepsearchr, and candidates are
+    ranked by a composite score that combines the spectral match factor
+    with retention-index and elemental-composition penalties
+    (`identify_components()`).
+6.  **Quantification** — identified components are quantified by the
+    Polyarc method using raw FID peak areas (`quantify()`).
+7.  **Reporting** — `summarize_report()`, `write_excel_report()`, and
+    `write_pdf_report()` produce a compound table, a multi-sheet Excel
+    workbook, or a rendered PDF report.
+
+The entire sequence may be invoked in a single call through
+`process_sample()`.
+
+## Installation
+
+moosaic is distributed from source. From the package directory (or an
+extracted tarball), install with:
+
+``` r
+install.packages("path/to/moosaic")
+```
+
+or, when working with a local checkout during development,
+
+``` r
+devtools::load_all()   # load without installing
+devtools::install_local()  # build and install
+```
+
+The package imports the following packages from CRAN: `ALS` (the MCR-ALS
+solver), `chromConverter` (used to read Chemstation .ms and .ch files),
+`cli`, `Matrix`, `openxlsx`, `tibble`, `rlang`, and `stats`. They aren
+installed automatically when moosaic is installed.
+
+Two capabilities depend on optional packages:
+
+- **Library search** requires `mspepsearchr`, a wrapper around NIST
+  MSPepSearch distributed only from GitHub
+  (`Remotes: andreysamokhin/mspepsearchr`). The underlying executable is
+  native to Windows; on other platforms it must be run through a
+  compatibility layer. Install it with, for example,
+
+  ``` r
+  remotes::install_github("andreysamokhin/mspepsearchr")
+  ```
+
+  and designate one or more NIST-format library directories before
+  searching:
+
+  ``` r
+  moosaic::specify_library(c(
+    "C:/NIST23/MSSEARCH/mainlib/",
+    "C:/NIST23/MSSEARCH/replib/"
+  ))
+  ```
+
+- **PDF reports** require `quarto`, which renders the report template
+  shipped in `inst/report/`. Install it from <https://quarto.org> if PDF
+  output is required; Excel reporting does not depend on it.
+
+## Usage
+
+The one-call entry point reads a run, aligns the detectors, deconvolves
+every window, identifies and quantifies the components, and summarises
+the result:
+
+``` r
+library(moosaic)
+
+info <- sample_info("S1", density = 0.85)
+res <- process_sample(
+  ms_file    = "run.ms",
+  fid_file   = "run.ch",
+  info       = info,
+  ri_cal     = "ONSITE.CAL"
+)
+total_compound_table(res)
+write_excel_report(res)
+```
+
+`sample_info()` collects the sample metadata (identifier, density, and
+any calibration information) used by quantification and the reports. An
+RI calibration file in ChemStation `.CAL` format — whitespace-delimited
+lines of retention time, retention index, and reference name — may be
+supplied to enable RI-based scoring; it is parsed and validated by
+`read_ri_calibration()`.
+
+For workflows that require inspection or custom handling between stages,
+each stage is also exposed individually:
+
+``` r
+exp <- read_experiment("run.ms", "run.ch")   # gcms_fid_exp object
+exp <- align_detectors(exp)                  # estimate FID/MS delay
+res <- deconvolve_run(exp)                   # components per window
+res <- identify_components(res, ri_cal = "ONSITE.CAL")
+res <- quantify(res, info)
+summarize_report(res)
+```
+
+Behaviour is controlled through options. Defaults are defined in a
+single place and may be inspected and modified as follows:
+
+``` r
+moosaic_options()                            # current values
+set_moosaic_options(rank_max = 4L)           # set one or more, validated
+specify_search_params(type = "identity", hits = 10L)
+reset_moosaic_options()                      # restore all defaults
+```
+
+Because option defaults are applied only to names that have not already
+been set, values assigned in a project `.Rprofile` take precedence over
+package defaults.
+
+## Multivariate deconvolution
+
+### The mixing model
+
+In gas chromatography the elution profiles of co-eluting compounds
+overlap, so that within a retention-time window the mass spectrometer
+records, at each scan and m/z channel, the spectra of every compound
+present. Provided the response is linear — which holds for both FID and
+(less so) the MS at ordinary concentrations — the data matrix **D**
+(scans by m/z channels) over such a window admits the factorisation
+
+$$ \mathbf{D} = \mathbf{C}\,\mathbf{S}^{\top} + \mathbf{E}, $$
+
+where the columns of **C** are the concentration profiles of the
+individual components, the columns of **S** their mass spectra, and
+**E** an error or background term. Resolving a co-eluting mixture is
+therefore a bilinear decomposition problem. The difficulty is that the
+factorisation is not unique: infinitely many pairs (**C**, **S**)
+reproduce **D**. Physical constraints remove most of this indeterminacy.
+Concentrations in time and spectral intensities are non-negative;
+chromatographic peaks are unimodal; and — for a run with two detectors —
+the concentration profiles are known, to first order, from the FID
+trace, which responds approximately uniformly to all carbon-containing
+eluting material regardless of structure. moosaic applies exactly these
+constraints through multivariate curve resolution by alternating least
+squares (MCR-ALS), as implemented in `ALS::als()`.
+
+### Why the FID guides the windowing and rank
+
+The MS alone does not reveal how many compounds share a peak: two
+structurally dissimilar co-eluters may produce few or no shared m/z
+channels, so that dimensionality-based methods can under-estimate the
+number of components. The FID, by contrast, integrates every eluting
+carbon compound into a single trace; a shoulder on the FID is evidence
+of an additional component even when its mass spectrum bears little
+resemblance to its neighbours. moosaic therefore detects peaks and
+shoulders on a processed copy of the raw FID (baseline correction,
+Savitzky–Golay smoothing, second-derivative shoulder detection), merges
+nearby peaks into deconvolution windows with a small padding, and uses
+these windows as the fitting domains. The raw FID is never altered; it
+remains available for the subsequent Polyarc integration, so that
+quantification operates on measured area rather than on fitted values.
+
+Within each window the number of components is estimated by
+`estimate_rank()`, which takes a majority vote across four independent
+methods: the peak count on the FID trace (`"fid"`), cumulative explained
+variance from the singular value decomposition (`"svd"`), the Bayesian
+information criterion over rank-r reconstructions (`"bic"`), and
+parallel analysis with column permutations (`"pa"`). Voting over
+heterogeneous estimators is deliberately conservative: a single
+misleading method does not determine the outcome, and the resulting
+confidence value (the share of votes agreeing with the consensus) is
+reported with every component so that weak assignments are visible in
+the final table.
+
+### Initial profiles and constraints
+
+MCR-ALS alternates least-squares updates of **C** (given fixed **S**)
+and of **S** (given fixed **C**), enforcing non-negativity at each step;
+it converges to a local solution whose quality depends on the initial
+estimates. moosaic constructs both from data rather than assumption:
+
+- The initial concentration matrix **C0** is built by
+  `build_constraints()`. The FID trace resampled onto the window’s MS
+  scans is segmented into one region per component, and each column of
+  **C0** is the *measured* FID profile restricted to its segment (zero
+  elsewhere), scaled to a maximum of one. Using measured profiles rather
+  than assumed peak shapes means the fit does not presuppose symmetric,
+  Gaussian elution; asymmetric or tailing peaks are accommodated because
+  their shape enters through **C0** and is then refined by the
+  alternating iterations subject only to non-negativity — and
+  unimodality, when enabled via `moosaic.als_unimodal`.
+- The initial spectra matrix **S0** is obtained from the leading right
+  singular vectors of the window’s MS data matrix (`build_s0()`), made
+  non-negative and scaled to a maximum intensity of one.
+
+An optional flat background component (column bleed, air ions) may be
+appended as a final column; with `baseline = TRUE` in `ALS::als()`, that
+last column is exempted from the unimodality constraint, which permits
+it to model constant interference while the analyte profiles remain
+peak-shaped. The fit returns, in addition to **C** and **S**, a set of
+diagnostics — lack-of-fit percentage, R², iteration count, convergence
+flag, and per-component explained variance — so that windows whose
+solutions are poor can be identified from the reports rather than
+silently accepted. Non-convergence within `moosaic.als_maxiter`
+iterations is reported as a warning and the best available solution is
+still returned.
+
+Finally, because quantification must use measured FID area, the raw
+window area is apportioned among the fitted components in proportion to
+each component’s share of the fitted signal at every scan
+(`.apportion_fid_area()`); the apportioned areas sum exactly to the raw
+integrated area.
+
+## Detector alignment
+
+### Why alignment is required
+
+The FID and the mass spectrometer sit in parallel after the column, with
+post- column splitting and transfer of flow through two different
+transfer lines. Consequently the two detectors record the same eluting
+compound at slightly different retention times, typically a delay of the
+order of tens to hundreds of milliseconds. While a theoretical alignment
+delay can be calculated, it’s analytically more robust to discover the
+delay empirically.
+
+Deconvolution windows are defined from the FID trace but fitted against
+the MS data matrix on its own scan grid. If the delay were ignored, each
+window would be shifted relative to the mass spectral signal it is meant
+to resolve: the concentration profiles derived from the FID could no
+longer coincide with the ion abundances in **D**, and the ALS fit would
+either fail or converge to an incorrect solution that smears components
+across one another. The delay must therefore be estimated before any
+windowing, and it is recorded on the experiment object so that all
+downstream use of MS retention times subtracts a single, consistently
+determined offset. Raw time stamps in both files are left untouched at
+every stage; alignment is applied by the dedicated `.apply_alignment()`
+helper wherever MS times enter a calculation.
+
+### Cross-correlation engine (default)
+
+The default engine (`moosaic.align_engine = "xcorr"`) estimates the
+delay as the lag that maximises the normalised cross-correlation between
+the FID trace and the total ion current of the MS, which is read
+directly from the data file:
+
+1.  Both traces are interpolated onto a common grid over their
+    overlapping range (grid spacing given by `moosaic.align_step`,
+    default 0.001 min).
+2.  A baseline estimate is subtracted from each trace so that drift does
+    not bias the correlation.
+3.  The normalised cross-correlation is evaluated for every quantized
+    lag within ± `moosaic.max_delay` (default 0.2 min); the
+    normalisation makes the score invariant to the differing dynamic
+    ranges and units of the two detectors (pA versus ion counts).
+4.  The best discrete lag is refined by fitting a parabola through it
+    and its two neighbours, yielding a sub-grid delay estimate with an
+    uncertainty well below one MS scan interval.
+
+Cross-correlation is appropriate here because the FID and TIC are, up to
+the delay and response (scaling) factor, near replicas of one another:
+both integrate all eluting material over the same chromatographic
+sequence, so their peak patterns — not their absolute amplitudes — carry
+the alignment information. The method is c omputationallynegligible even
+for dense runs (tens of thousands of FID points against tens of
+thousands of MS scans) and does not depend on any particular peak being
+present in both traces; it suffices that the pattern as a whole
+correlates, which holds for chromatographic data with more than a
+handful of resolved peaks. The delay and its correlation score are
+stored in `exp$alignment`, and windows carry padding
+(`moosaic.window_padding`) precisely to tolerate any residual misfit at
+sub-scan level.
+
+### GCalignR engine (opt-in)
+
+The alternative engine (`engine = "gcalignr"`) delegates estimation to
+GCalignR: peaks are detected independently on the FID and TIC, converted
+into peak lists (retention time and area), and aligned by
+`GCalignR::align_chromatograms()`, whose linear-shift estimate is
+returned as the delay. Peak-list alignment models each detector’s
+resolved peaks explicitly rather than correlating whole traces, which
+can be advantageous when a single dominant feature (for example the
+solvent front) would otherwise dominate a cross-correlation. Two
+safeguards accompany this engine:
+
+- Because peak-list alignment is more costly — on the order of minutes
+  for dense runs — it is not run by default;
+- whenever it is used, the inexpensive cross-correlation estimate is
+  computed as an independent cross-check, and a warning (class
+  `engine_disagreement`) is issued if the two estimates differ by more
+  than one MS scan interval. If GCalignR cannot be applied because fewer
+  than two peaks are detected in either trace, the package falls back to
+  the cross-correlation result with a warning of class
+  `engine_fallback`, so that the pipeline degrades gracefully rather
+  than failing.
+
+Either way, the outcome is a single scalar delay (in minutes, positive
+when MS times lag FID times) together with the engine and score used,
+all recorded on the experiment for auditability in the reports.
+
+## Quantification and reporting
+
+Quantification follows the Polyarc method: each identified component’s
+mass is computed relative to an internal reference peak from its raw FID
+area, the reference concentration, and the molecular weights of both
+compounds; no smoothing or re-integration of processed data enters this
+step. Identification scores combine the library match factor with a
+retention-index penalty (with a grace band around the library RI) and an
+elemental penalty for formulas outside the allowed element set, so that
+chemically implausible candidates are demoted regardless of spectral
+similarity. `summarize_report()` assembles families, element balances,
+totals, and explanatory notes; `write_excel_report()` emits a
+multi-sheet workbook via openxlsx, and `write_pdf_report()` renders the
+Quarto template in `inst/report/`.
+
+## References
+
+- Tauler, R.; *Chemometrics and Intelligent Laboratory Systems* 30, (1),
+  133-146 (1995)
+- Jonsson, P.; Johansson, A. I.; Gullberg, J.; Trygg, J.; A, J.; Grung,
+  B.; Marklund, S.; Sjostrom, M.; Antti, H.; Moritz, T.; *Analytical
+  Chemistry* 77 (17) 5635-5642 (2005)
+- van Stokkum I. H. M.; Mullen, K. M.; Mihaleva, V. V.; *Chemometrics
+  and Intelligent Laboratory Systems* 95, 150-163 (2009)
+- Beach, C. A.; Krumm, C.; Spanjers, C. S.; Maduskar, S.; Jones, A. J.;
+  Dauenhauer, P. J.; *Analyst* 141 (5) 1627-1632 (2016)
+- Dalmau, N.; Bedia, C.; Tauler, R.; *Anal. Chim. Acta* 1025, 80-91
+  (2018)

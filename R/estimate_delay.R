@@ -24,6 +24,14 @@
 
   call = rlang::caller_env()
 ) {
+  if (identical(engine, "gcalignr") && !rlang::is_installed("GCalignR")) {
+    .moosaic_warn(
+      "GCalignR package is not installed; the gcalignr engine is not available. Defaulting to xcorr",
+      class = "missing_package",
+      call = call
+    )
+    engine <- "xcorr"
+  }
   if (
     !is.character(engine) ||
       length(engine) != 1L ||

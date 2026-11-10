@@ -16,7 +16,7 @@
   out <- out[
     order(match(out$component_id, unique(out$component_id)), -out$final),
   ]
-  out$final_rank <- as.integer(ave(
+  out$final_rank <- as.integer(stats::ave(
     seq_len(nrow(out)),
     out$component_id,
     FUN = seq_along

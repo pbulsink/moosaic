@@ -7,3 +7,9 @@
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
+^AGENTS\.md$
+^readme\.Rmd$
+^Rprof\.out$
+^\.posit$
+^doc$
+^Meta$

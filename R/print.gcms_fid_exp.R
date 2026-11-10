@@ -15,7 +15,7 @@ print.gcms_fid_exp <- function(x, ...) {
   cat(
     "RT range:",
     sprintf("%.2f", min(x$ms$rt)),
-    "–",
+    "-",
     sprintf("%.2f", max(x$ms$rt)),
     "min\n"
   )

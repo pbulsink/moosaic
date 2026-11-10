@@ -20,6 +20,14 @@
   step,
   call = rlang::caller_env()
 ) {
+  if (!requireNamespace("GCalignR", quietly = TRUE)) {
+    .moosaic_abort(
+      "GCalignR package is not installed; the gcalignr engine is not available.",
+      class = "missing_package",
+      call = call
+    )
+  }
+
   if (nrow(fid_peaks) < 2L || nrow(tic_peaks) < 2L) {
     .moosaic_abort(
       "GCalignR needs at least two peaks in both the FID and the TIC (found {nrow(fid_peaks)} and {nrow(tic_peaks)}).",

@@ -20,6 +20,13 @@
 #' @export
 write_excel_report <- function(x, path = NULL) {
   call <- rlang::current_env()
+  if (!requireNamespace("openxlsx")) {
+    .moosaic_abort(
+      "openxlsx package is not installed; writing Excel reports is not available.",
+      class = "missing_package",
+      call = call
+    )
+  }
   .require_quantified(x, call = call)
   .check_report_path(path, call)
   if (is.null(x$summary)) {

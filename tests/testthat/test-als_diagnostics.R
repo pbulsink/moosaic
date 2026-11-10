@@ -1,0 +1,11 @@
+test_that(".als_diagnostics() reports fit quality for a perfect fit", {
+  d <- als_fixture(2)
+  info <- list(iter = 5, converged = TRUE, rd_final = 1e-4)
+  dg <- .als_diagnostics(d$D, 100 * d$C, d$S, info)
+  expect_equal(dg$lack_of_fit, 0, tolerance = 1e-8)
+  expect_equal(dg$r2, 1)
+  expect_equal(dg$iter, 5)
+  expect_true(dg$converged)
+  expect_length(dg$explained_variance, 2L)
+  expect_true(all(dg$explained_variance > 0))
+})

@@ -12,15 +12,20 @@ Imports:
     ALS,
     cli,
     Matrix,
-    openxlsx,
     tibble,
     rlang,
-    stats
+    stats,
+    chromConverter
 Suggests:
+    knitr,
     mspepsearchr,
     quarto,
+    rmarkdown,
     testthat (>= 3.0.0),
-    withr
+    withr,
+    GCalignR,
+    openxlsx
 Config/testthat/edition: 3
 Remotes: andreysamokhin/mspepsearchr
 URL: https://pbulsink.github.io/moosaic/
+VignetteBuilder: knitr

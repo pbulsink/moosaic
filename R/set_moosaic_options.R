@@ -34,7 +34,7 @@ set_moosaic_options <- function(...) {
   }
 
   # Build options list with full names
-  opts_to_set <- setNames(dots, paste0("moosaic.", names(dots)))
+  opts_to_set <- stats::setNames(dots, paste0("moosaic.", names(dots)))
   old <- options(opts_to_set)
 
   invisible(old)

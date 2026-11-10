@@ -22,7 +22,8 @@ test_that("align_detectors() recovers synthetic delays of 0 and 0.05 with both e
   for (delay in c(0, 0.05)) {
     exp <- mk_exp(delay)
     scan <- stats::median(diff(exp$ms$rt))
-    for (eng in c("xcorr", "gcalignr")) {
+    engines <- c("xcorr", if (rlang::is_installed("GCalignR")) "gcalignr")
+    for (eng in engines) {
       out <- align_detectors(exp, engine = eng)
       expect_lt(abs(out$alignment$delay - delay), scan)
       expect_equal(out$alignment$engine, eng)
@@ -46,6 +47,7 @@ test_that("align_detectors() with xcorr skips GCalignR and leaves raw data uncha
 })
 
 test_that("align_detectors() with gcalignr records an xcorr cross-check", {
+  skip_if_not_installed("GCalignR")
   out <- align_detectors(mk_exp(0.05), engine = "gcalignr")
   expect_equal(out$alignment$cross_check$engine, "xcorr")
   expect_gt(out$alignment$score, 0.9)
@@ -58,6 +60,7 @@ test_that("align_detectors() defaults to the xcorr engine", {
 })
 
 test_that("align_detectors() warns when the engines disagree by more than a scan", {
+  skip_if_not_installed("GCalignR")
   exp <- mk_exp(0.05)
   local_mocked_bindings(
     .estimate_delay_gcalignr = \(...) 0.15
@@ -69,6 +72,7 @@ test_that("align_detectors() warns when the engines disagree by more than a scan
 })
 
 test_that("align_detectors() falls back to xcorr when GCalignR has too few peaks", {
+  skip_if_not_installed("GCalignR")
   exp <- make_synthetic_run(
     n_comp = 1,
     centers = 5,

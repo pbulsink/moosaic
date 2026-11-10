@@ -5,7 +5,8 @@
 #' @param type Character; search function type: `"identity"`, `"simple"`, `"hybrid"`, or `"neutral_loss"`.
 #' @param hits Integer; number of hits to return (default from options).
 #' @param threads Integer; number of threads for parallel search (default from options).
-#' @param ri_column_type Character; RI column type string (must be recognized by mspepsearchr).
+#' @param ri_column_type Character; RI column type reported by MSPepSearch:
+#'   `"semi-standard non-polar"` or `"standard non-polar"`.
 #' @param min_match_factor Integer; minimum match factor to report (default from options).
 #'
 #' @return Invisibly, previous option values.
@@ -56,6 +57,14 @@ specify_search_params <- function(
         call = rlang::caller_env()
       )
     }
+  }
+
+  # Validate ri_column_type if provided
+  if (!is.null(ri_column_type)) {
+    ri_column_type <- rlang::arg_match(
+      ri_column_type,
+      c("semi-standard non-polar", "standard non-polar")
+    )
   }
 
   # Build options list
