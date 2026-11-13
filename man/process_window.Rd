@@ -8,7 +8,10 @@ process_window(window, exp)
 }
 \arguments{
 \item{window}{A one-row data frame such as a row of \code{\link[=detect_fid_windows]{detect_fid_windows()}},
-or a list with \code{start_rt}, \code{end_rt} and optional \code{window_id}.}
+or a list with \code{start_rt}, \code{end_rt} and optional \code{window_id} and
+\code{shoulder}. When \code{shoulder} is \code{TRUE}, \code{\link[=estimate_rank]{estimate_rank()}} always runs
+parallel analysis, since an unresolved shoulder is easily outvoted by
+the cheaper rank methods.}
 
 \item{exp}{A \code{gcms_fid_exp} object, ideally after \code{\link[=align_detectors]{align_detectors()}}.}
 }

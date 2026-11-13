@@ -18,7 +18,7 @@
 #'
 #' @keywords internal
 .interpolate_unknowns <- function(peaks) {
-  peaks$origin <- ifelse(peaks$identified, "library", NA_character_)
+  peaks$origin <- ifelse(peaks$identified, "library", NA_character_) # ry: ignore[RY106]
   known <- which(peaks$identified)
   if (length(known) == 0L) {
     .moosaic_warn(

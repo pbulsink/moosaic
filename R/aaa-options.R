@@ -35,9 +35,10 @@
     moosaic.window_merge_gap = 0.01,
     moosaic.min_scans_per_window = 8L,
     # Rank estimation
-    moosaic.rank_methods = c("fid", "svd", "bic", "pa"),
+    moosaic.rank_methods = c("fid", "svd", "bic", "pfr", "pa"),
     moosaic.rank_max = 6L,
     moosaic.svd_var_threshold = 0.99,
+    moosaic.pfr_cutoff = 0.95,
     moosaic.pa_iterations = 50L,
     # ALS
     moosaic.background_component = TRUE,

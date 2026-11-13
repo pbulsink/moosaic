@@ -29,7 +29,7 @@ test_that("estimate_rank() recovers the rank of noiseless data with full agreeme
     out <- estimate_rank(x$D, x$fid)
     expect_equal(out$rank, k)
     expect_equal(out$confidence, 1)
-    expect_named(out$votes, c("fid", "svd", "bic"))
+    expect_named(out$votes, c("fid", "svd", "bic", "pfr"))
   }
 })
 
@@ -42,7 +42,7 @@ test_that("estimate_rank() skips parallel analysis when the other methods agree"
   x <- make_lowrank(2)
   out <- estimate_rank(x$D, x$fid)
   expect_equal(pa_calls, 0L)
-  expect_length(out$votes, 3L)
+  expect_length(out$votes, 4L)
   expect_false("pa" %in% names(out$votes))
   expect_equal(out$rank, 2L)
 })
@@ -54,6 +54,7 @@ test_that("estimate_rank() runs parallel analysis when the other methods disagre
     .rank_fid = \(...) 1L,
     .rank_svd = \(...) 2L,
     .rank_bic = \(...) 2L,
+    .rank_pfr = \(...) 2L,
     .rank_pa = \(...) {
       pa_calls <<- pa_calls + 1L
       2L
@@ -62,10 +63,10 @@ test_that("estimate_rank() runs parallel analysis when the other methods disagre
   x <- make_lowrank(2)
   out <- estimate_rank(x$D, x$fid)
   expect_equal(pa_calls, 1L)
-  expect_length(out$votes, 4L)
-  expect_named(out$votes, c("fid", "svd", "bic", "pa"))
+  expect_length(out$votes, 5L)
+  expect_named(out$votes, c("fid", "svd", "bic", "pfr", "pa"))
   expect_equal(out$rank, 2L)
-  expect_equal(out$confidence, 0.75)
+  expect_equal(out$confidence, 0.8)
 })
 
 test_that("estimate_rank() runs parallel analysis when too few other votes are usable", {
@@ -98,6 +99,48 @@ test_that("estimate_rank() compares capped votes when deciding to skip", {
   )
   expect_equal(pa_calls, 0L)
   expect_equal(out$rank, 3L)
+})
+
+test_that("estimate_rank() always runs parallel analysis when force_pa is TRUE", {
+  pa_calls <- 0L
+  local_mocked_bindings(.rank_pa = \(...) {
+    pa_calls <<- pa_calls + 1L
+    2L
+  })
+  x <- make_lowrank(2)
+  out <- estimate_rank(x$D, x$fid, force_pa = TRUE)
+  expect_equal(pa_calls, 1L)
+  expect_named(out$votes, c("fid", "svd", "bic", "pfr", "pa"))
+})
+
+test_that("estimate_rank() ignores force_pa when pa is not a method", {
+  local_mocked_bindings(.rank_pa = \(...) stop("pa should not run"))
+  out <- estimate_rank(make_lowrank(2)$D, methods = "svd", force_pa = TRUE)
+  expect_named(out$votes, "svd")
+})
+
+test_that("estimate_rank() rejects a non-flag force_pa", {
+  expect_error(
+    estimate_rank(make_lowrank(1)$D, methods = "svd", force_pa = NA),
+    class = "moosaic-error-bad_argument"
+  )
+})
+
+test_that("estimate_rank() includes the pseudo F-ratio vote as a cheap method", {
+  pa_calls <- 0L
+  local_mocked_bindings(.rank_pa = \(...) {
+    pa_calls <<- pa_calls + 1L
+    2L
+  })
+  x <- make_lowrank(2)
+  out <- estimate_rank(
+    x$D,
+    x$fid,
+    methods = c("fid", "svd", "bic", "pfr", "pa")
+  )
+  expect_named(out$votes, c("fid", "svd", "bic", "pfr"))
+  expect_equal(out$votes[["pfr"]], 2L)
+  expect_equal(pa_calls, 0L)
 })
 
 test_that("estimate_rank() caps rank and votes at max_rank", {
@@ -193,5 +236,5 @@ test_that("estimate_rank() returns a well-formed result at medium noise", {
   pair <- rank_window(exp, 9.8, 10.3)
   expect_true(pair$rank >= 1L && pair$rank <= 6L)
   expect_true(pair$confidence >= 0 && pair$confidence <= 1)
-  expect_true(all(c("fid", "svd", "bic") %in% names(pair$votes)))
+  expect_true(all(c("fid", "svd", "bic", "pfr") %in% names(pair$votes)))
 })

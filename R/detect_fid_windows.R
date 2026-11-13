@@ -6,8 +6,9 @@
 #' @param exp A `gcms_fid_exp` object.
 #'
 #' @return A tibble with `window_id`, `start_rt`, `end_rt` (FID time, min),
-#'   `n_peaks`, `peak_ids` and `n_scans` (MS scans inside the window after
-#'   removing the alignment delay). The peak table is attached as
+#'   `n_peaks`, `peak_ids`, `n_scans` (MS scans inside the window after
+#'   removing the alignment delay) and `shoulder` (logical; any peak in the
+#'   window has an unresolved shoulder). The peak table is attached as
 #'   `attr(, "peaks")`. `exp` is not modified.
 #'
 #' @details Padding and merge gap come from the `moosaic.window_padding` and
@@ -39,6 +40,11 @@ detect_fid_windows <- function(exp) {
     seq_len(nrow(windows)),
     \(i) sum(scan_rt >= windows$start_rt[i] & scan_rt <= windows$end_rt[i]),
     integer(1)
+  )
+  windows$shoulder <- vapply(
+    windows$peak_ids,
+    \(ids) any(peaks$shoulder[peaks$peak_id %in% ids]),
+    logical(1)
   )
   min_scans <- .get_moosaic_option("min_scans_per_window")
   few <- windows$window_id[windows$n_scans < min_scans]

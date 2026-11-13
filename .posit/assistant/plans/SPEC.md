@@ -190,9 +190,10 @@ All defaults in **one file**: `R/aaa-options.R` (`.moosaic_default_options()`); 
 | `moosaic.window_padding` | `0.02` (min) | windows |
 | `moosaic.window_merge_gap` | `0.01` (min) | windows |
 | `moosaic.min_scans_per_window` | `8L` | windows |
-| `moosaic.rank_methods` | `c("fid","svd","bic","pa")` | rank |
+| `moosaic.rank_methods` | `c("fid","svd","bic","pfr","pa")` | rank |
 | `moosaic.rank_max` | `6L` | rank |
 | `moosaic.svd_var_threshold` | `0.99` | `rank_svd` |
+| `moosaic.pfr_cutoff` | `0.95` | `rank_pfr` |
 | `moosaic.pa_iterations` | `50L` | `rank_pa` |
 | `moosaic.background_component` | `TRUE` | ALS (+1 rank) |
 | `moosaic.als_maxiter` | `100L` | ALS |
@@ -391,6 +392,7 @@ Detection operates on a processed **copy**; `exp$fid$intensity` stays raw for Po
 | `rank_fid.R` | `.rank_fid(fid)` | no |
 | `rank_svd.R` | `.rank_svd(D, threshold)` | no |
 | `rank_bic.R` | `.rank_bic(D, max_rank)` | no |
+| `rank_pfr.R` | `.rank_pfr(D, cutoff, max_rank)` | no |
 | `rank_pa.R` | `.rank_pa(D, iterations, max_rank)` | no |
 | `consensus_rank.R` | `.consensus_rank(votes)` | no |
 
@@ -613,6 +615,8 @@ Each step: unit tests → implement → stage tests → challenge tests → cove
 | FID scaling | Read with `scale = TRUE` (chromConverter default). |
 | Dependencies | Approved. |
 | Alignment engine | Default changed to `"xcorr"`; GCalignR (~700 s per run in profiling) is opt-in only and no longer run as a cross-check. Its peak recombination is reserved for post-deconvolution quantification needs (1.6). |
+| Pseudo F-ratio rank vote | `.rank_pfr()` adapts Giebelhaus et al. 2022 (doi:10.1016/j.chroma.2022.463499): F CDF of consecutive `s_k^2/s_{k+1}^2` with df `(w-1, w-2)`, as in the paper (cheap; no permutation null). Deviations, chosen on simulations: no autoscaling (it masks minor components); rank = last significant ratio, not leading run; only ratios up to `max_rank + 1` tested (tail ratios of noise are spuriously large). Cutoff 0.95, not the paper's 0.7 (0.7 over-calls). In the default `rank_methods` (always runs as a cheap vote; never gated like PA). |
+| Shoulder windows force PA | `detect_fid_windows()` adds a `shoulder` column (any peak flagged by `.has_shoulder()`); `process_window()` passes it as `estimate_rank(force_pa = )` so a shoulder is not lost when the FID-blind cheap votes agree on too low a rank. |
 
 ## 20. Later extensions
 

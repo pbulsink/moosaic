@@ -11,8 +11,9 @@ detect_fid_windows(exp)
 }
 \value{
 A tibble with \code{window_id}, \code{start_rt}, \code{end_rt} (FID time, min),
-\code{n_peaks}, \code{peak_ids} and \code{n_scans} (MS scans inside the window after
-removing the alignment delay). The peak table is attached as
+\code{n_peaks}, \code{peak_ids}, \code{n_scans} (MS scans inside the window after
+removing the alignment delay) and \code{shoulder} (logical; any peak in the
+window has an unresolved shoulder). The peak table is attached as
 \code{attr(, "peaks")}. \code{exp} is not modified.
 }
 \description{

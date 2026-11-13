@@ -8,23 +8,28 @@
 #' @param fid Optional list with numeric `rt` and `intensity`, one value per
 #'   row of `D` (see `.extract_fid_window()`). Required when `"fid"` is in
 #'   `methods`.
-#' @param methods Character vector, any of `"fid"`, `"svd"`, `"bic"`, `"pa"`.
-#'   `NULL` uses the `moosaic.rank_methods` option.
+#' @param methods Character vector, any of `"fid"`, `"svd"`, `"bic"`,
+#'   `"pfr"`, `"pa"`. `NULL` uses the `moosaic.rank_methods` option.
 #' @param max_rank Positive integer upper limit. `NULL` uses the
 #'   `moosaic.rank_max` option. Reduced to `min(dim(D))` with a message if
 #'   larger.
+#' @param force_pa Logical flag; if `TRUE`, parallel analysis runs (when in
+#'   `methods`) even if the other methods agree. [process_window()] sets this
+#'   for windows containing an FID shoulder, where the cheaper votes tend to
+#'   agree on too low a rank.
 #'
 #' @return A list with `rank` (integer, at least 1), `confidence` (share of
 #'   usable votes equal to `rank`, in 0 to 1) and `votes` (named integer
 #'   vector, one entry per method, `NA` when a method could not vote).
 #'
 #' @details Parallel analysis (`"pa"`) is skipped when at least two of the
-#'   other methods gave a usable vote and all of them agree; `votes` then has
-#'   no `pa` entry. Votes above `max_rank` are capped. If the consensus is 0
-#'   (no method finds signal), `rank` is 1, `confidence` is the share of
-#'   votes equal to 1, and a message of class `no_signal` is emitted. The
-#'   `"svd"`, `"bic"` and `"pa"` methods read their settings from
-#'   `moosaic.svd_var_threshold` and `moosaic.pa_iterations`. `"pa"` uses
+#'   other methods gave a usable vote, all of them agree and `force_pa` is
+#'   `FALSE`; `votes` then has no `pa` entry. Votes above `max_rank` are
+#'   capped. If the consensus is 0 (no method finds signal), `rank` is 1,
+#'   `confidence` is the share of votes equal to 1, and a message of class
+#'   `no_signal` is emitted. The `"svd"`, `"pfr"` and `"pa"` methods read
+#'   their settings from `moosaic.svd_var_threshold`, `moosaic.pfr_cutoff`
+#'   and `moosaic.pa_iterations`. `"pa"` uses
 #'   random permutations; call [set.seed()] first for reproducible results.
 #'   The optional background component is added later, not here.
 #'
@@ -37,9 +42,22 @@
 #' estimate_rank(D, list(rt = scan, intensity = rowSums(C)))
 #'
 #' @export
-estimate_rank <- function(D, fid = NULL, methods = NULL, max_rank = NULL) {
+estimate_rank <- function(
+  D,
+  fid = NULL,
+  methods = NULL,
+  max_rank = NULL,
+  force_pa = FALSE
+) {
   call <- rlang::current_env()
-  all_methods <- c("fid", "svd", "bic", "pa")
+  all_methods <- c("fid", "svd", "bic", "pfr", "pa")
+  if (!rlang::is_bool(force_pa)) {
+    .moosaic_abort(
+      "{.arg force_pa} must be {.code TRUE} or {.code FALSE}.",
+      class = "bad_argument",
+      call = call
+    )
+  }
   if (!is.matrix(D) || !is.numeric(D) || anyNA(D) || any(dim(D) < 1L)) {
     .moosaic_abort(
       "{.arg D} must be a non-empty numeric matrix without missing values.",
@@ -105,6 +123,12 @@ estimate_rank <- function(D, fid = NULL, methods = NULL, max_rank = NULL) {
       fid = .rank_fid(fid, call = call),
       svd = .rank_svd(D, .get_moosaic_option("svd_var_threshold"), call = call),
       bic = .rank_bic(D, max_rank),
+      pfr = .rank_pfr(
+        D,
+        .get_moosaic_option("pfr_cutoff"),
+        max_rank,
+        call = call
+      ),
       pa = .rank_pa(
         D,
         .get_moosaic_option("pa_iterations"),
@@ -116,13 +140,13 @@ estimate_rank <- function(D, fid = NULL, methods = NULL, max_rank = NULL) {
   cap <- \(v) pmin(v, as.integer(max_rank))
 
   # Parallel analysis is by far the slowest method, so it only runs when the
-  # cheaper methods do not already agree.
+  # cheaper methods do not already agree (or the caller forces it).
   cheap <- setdiff(methods, "pa")
   votes <- cap(vapply(cheap, run_method, integer(1)))
   if ("pa" %in% methods) {
     usable <- votes[!is.na(votes)]
     unanimous <- length(usable) >= 2L && length(unique(usable)) == 1L
-    if (!unanimous) {
+    if (force_pa || !unanimous) {
       votes <- c(votes, pa = cap(run_method("pa")))
     }
   }

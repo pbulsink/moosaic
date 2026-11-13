@@ -41,6 +41,25 @@ test_that("process_window() adds an optional background component", {
   expect_true(comps[[3]]$is_background)
 })
 
+test_that("process_window() forces parallel analysis only for shoulder windows", {
+  withr::local_options(moosaic.background_component = FALSE)
+  seen <- logical()
+  local_mocked_bindings(
+    estimate_rank = \(D, fid, force_pa = FALSE, ...) {
+      seen <<- c(seen, force_pa)
+      list(rank = 1L, confidence = 1, votes = c(svd = 1L))
+    },
+    fit_window = \(...) stop("stop after rank")
+  )
+  exp <- mk_pair()
+  expect_error(
+    process_window(c(pair_window, shoulder = TRUE), exp),
+    "stop after rank"
+  )
+  expect_error(process_window(pair_window, exp), "stop after rank")
+  expect_equal(seen, c(TRUE, FALSE))
+})
+
 test_that("process_window() rejects a bad exp", {
   expect_error(
     process_window(pair_window, 1),

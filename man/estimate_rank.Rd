@@ -4,7 +4,7 @@
 \alias{estimate_rank}
 \title{Estimate the number of components in a window}
 \usage{
-estimate_rank(D, fid = NULL, methods = NULL, max_rank = NULL)
+estimate_rank(D, fid = NULL, methods = NULL, max_rank = NULL, force_pa = FALSE)
 }
 \arguments{
 \item{D}{Numeric matrix without missing values, scans x m/z (see
@@ -14,12 +14,17 @@ estimate_rank(D, fid = NULL, methods = NULL, max_rank = NULL)
 row of \code{D} (see \code{.extract_fid_window()}). Required when \code{"fid"} is in
 \code{methods}.}
 
-\item{methods}{Character vector, any of \code{"fid"}, \code{"svd"}, \code{"bic"}, \code{"pa"}.
-\code{NULL} uses the \code{moosaic.rank_methods} option.}
+\item{methods}{Character vector, any of \code{"fid"}, \code{"svd"}, \code{"bic"},
+\code{"pfr"}, \code{"pa"}. \code{NULL} uses the \code{moosaic.rank_methods} option.}
 
 \item{max_rank}{Positive integer upper limit. \code{NULL} uses the
 \code{moosaic.rank_max} option. Reduced to \code{min(dim(D))} with a message if
 larger.}
+
+\item{force_pa}{Logical flag; if \code{TRUE}, parallel analysis runs (when in
+\code{methods}) even if the other methods agree. \code{\link[=process_window]{process_window()}} sets this
+for windows containing an FID shoulder, where the cheaper votes tend to
+agree on too low a rank.}
 }
 \value{
 A list with \code{rank} (integer, at least 1), \code{confidence} (share of
@@ -32,12 +37,13 @@ data matrix by majority vote.
 }
 \details{
 Parallel analysis (\code{"pa"}) is skipped when at least two of the
-other methods gave a usable vote and all of them agree; \code{votes} then has
-no \code{pa} entry. Votes above \code{max_rank} are capped. If the consensus is 0
-(no method finds signal), \code{rank} is 1, \code{confidence} is the share of
-votes equal to 1, and a message of class \code{no_signal} is emitted. The
-\code{"svd"}, \code{"bic"} and \code{"pa"} methods read their settings from
-\code{moosaic.svd_var_threshold} and \code{moosaic.pa_iterations}. \code{"pa"} uses
+other methods gave a usable vote, all of them agree and \code{force_pa} is
+\code{FALSE}; \code{votes} then has no \code{pa} entry. Votes above \code{max_rank} are
+capped. If the consensus is 0 (no method finds signal), \code{rank} is 1,
+\code{confidence} is the share of votes equal to 1, and a message of class
+\code{no_signal} is emitted. The \code{"svd"}, \code{"pfr"} and \code{"pa"} methods read
+their settings from \code{moosaic.svd_var_threshold}, \code{moosaic.pfr_cutoff}
+and \code{moosaic.pa_iterations}. \code{"pa"} uses
 random permutations; call \code{\link[=set.seed]{set.seed()}} first for reproducible results.
 The optional background component is added later, not here.
 }

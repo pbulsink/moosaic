@@ -4,7 +4,10 @@
 #' constraints, fits by MCR-ALS and assembles components.
 #'
 #' @param window A one-row data frame such as a row of [detect_fid_windows()],
-#'   or a list with `start_rt`, `end_rt` and optional `window_id`.
+#'   or a list with `start_rt`, `end_rt` and optional `window_id` and
+#'   `shoulder`. When `shoulder` is `TRUE`, [estimate_rank()] always runs
+#'   parallel analysis, since an unresolved shoulder is easily outvoted by
+#'   the cheaper rank methods.
 #' @param exp A `gcms_fid_exp` object, ideally after [align_detectors()].
 #'
 #' @return A list of `moosaic_component` objects. A flat background component
@@ -23,7 +26,11 @@ process_window <- function(window, exp) {
   bg <- isTRUE(.get_moosaic_option("background_component"))
   mm <- extract_ms_matrix(exp, window)
   fid_det <- .extract_fid_window(exp, window, call = call)
-  rk <- estimate_rank(mm$D, fid_det)
+  rk <- estimate_rank(
+    mm$D,
+    fid_det,
+    force_pa = isTRUE(window[["shoulder"]])
+  )
   # The background column also needs a degree of freedom in tiny windows
   rank <- max(1L, min(rk$rank, min(dim(mm$D)) - bg))
   cons <- build_constraints(fid_det, rank, background = bg)
