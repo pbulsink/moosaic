@@ -13,7 +13,7 @@ Merge peaks into deconvolution windows
 - peaks:
 
   Tibble from
-  [`detect_fid_peaks()`](https://pbulsink.github.io/moosaic/reference/detect_fid_peaks.md).
+  [`detect_peaks()`](https://pbulsink.github.io/moosaic/reference/detect_peaks.md).
 
 - padding:
 

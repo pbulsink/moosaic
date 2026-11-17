@@ -15,7 +15,11 @@ process_window(window, exp)
 
   A one-row data frame such as a row of
   [`detect_fid_windows()`](https://pbulsink.github.io/moosaic/reference/detect_fid_windows.md),
-  or a list with `start_rt`, `end_rt` and optional `window_id`.
+  or a list with `start_rt`, `end_rt` and optional `window_id` and
+  `has_shoulder`. When `has_shoulder` is `TRUE`,
+  [`estimate_rank()`](https://pbulsink.github.io/moosaic/reference/estimate_rank.md)
+  always runs parallel analysis, since an unresolved shoulder is easily
+  outvoted by the cheaper rank methods.
 
 - exp:
 

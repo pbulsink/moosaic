@@ -201,7 +201,7 @@ any windowing.
 
 Options used when peaks are detected on the *processed copy* of the FID
 trace
-([`detect_fid_peaks()`](https://pbulsink.github.io/moosaic/reference/detect_fid_peaks.md)).
+([`detect_peaks()`](https://pbulsink.github.io/moosaic/reference/detect_peaks.md)).
 The raw FID is never modified — quantification always integrates raw
 areas — so these options affect window placement and rank votes, never
 measured amounts.
@@ -270,20 +270,23 @@ components in each window.
 
 | Option | Default | Meaning |
 |----|----|----|
-| `moosaic.rank_methods` | `c("fid", "svd", "bic", "pa")` | Methods taking part in the rank vote |
+| `moosaic.rank_methods` | `c("fid", "svd", "bic", "pfr", "pa")` | Methods taking part in the rank vote |
 | `moosaic.rank_max` | `6L` | Upper bound on components per window |
 | `moosaic.svd_var_threshold` | `0.99` | Cumulative explained variance required by the `"svd"` vote |
+| `moosaic.pfr_cutoff` | `0.95` | F-distribution probability a singular-value ratio must reach in the `"pfr"` vote |
 | `moosaic.pa_iterations` | `50L` | Column permutations in parallel analysis (`"pa"`) |
 
 - **`moosaic.rank_methods`** — any subset of `"fid"` (peak count on the
   window’s FID trace), `"svd"` (cumulative explained variance from the
   singular value decomposition), `"bic"` (Bayesian information criterion
-  over rank-r reconstructions) and `"pa"` (parallel analysis). The
-  consensus is a majority vote; its confidence — the share of votes
-  agreeing with it — travels with each component into the reports.
-  Parallel analysis is by far the slowest method, so it runs only when
-  at least two other methods gave usable votes that do not all agree;
-  because it uses random permutations, call
+  over rank-r reconstructions), `"pfr"` (sequential pseudo F-ratios of
+  singular values, after Giebelhaus et al. 2022) and `"pa"` (parallel
+  analysis). The consensus is a majority vote; its confidence — the
+  share of votes agreeing with it — travels with each component into the
+  reports. Parallel analysis is by far the slowest method, so it runs
+  only when at least two other methods gave usable votes that do not all
+  agree, or when the window contains an FID peak flagged as having a
+  shoulder; because it uses random permutations, call
   [`set.seed()`](https://rdrr.io/r/base/Random.html) first for
   reproducible results.
 - **`moosaic.rank_max`** — no window may be fitted with more analyte
@@ -297,6 +300,11 @@ components in each window.
   uncentred, so a constant background counts as the first component; on
   noisy data the vote leans high and that is why it is one of several
   rather than the decider.
+- **`moosaic.pfr_cutoff`** — the `"pfr"` vote is the largest `k` whose
+  ratio of consecutive squared singular values reaches this probability
+  under an F distribution with (scans - 1, scans - 2) degrees of
+  freedom. The F reference is a heuristic, so treat the cutoff as a
+  tuning value: lower values call more components.
 - **`moosaic.pa_iterations`** — number of column-permuted null matrices
   used to build the reference distribution for parallel analysis (the
   rank estimate is the count of leading singular values above its 95th

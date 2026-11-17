@@ -78,13 +78,16 @@ A named list of defaults (not assigned to
 #> [1] 8
 #> 
 #> $moosaic.rank_methods
-#> [1] "fid" "svd" "bic" "pa" 
+#> [1] "fid" "svd" "bic" "pfr" "pa" 
 #> 
 #> $moosaic.rank_max
 #> [1] 6
 #> 
 #> $moosaic.svd_var_threshold
 #> [1] 0.99
+#> 
+#> $moosaic.pfr_cutoff
+#> [1] 0.95
 #> 
 #> $moosaic.pa_iterations
 #> [1] 50

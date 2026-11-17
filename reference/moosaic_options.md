@@ -74,6 +74,9 @@ moosaic_options()
 #> $moosaic.peak_min_height_snr
 #> [1] 5
 #> 
+#> $moosaic.pfr_cutoff
+#> [1] 0.95
+#> 
 #> $moosaic.quant_style
 #> [1] "internal"
 #> 
@@ -81,7 +84,7 @@ moosaic_options()
 #> [1] 6
 #> 
 #> $moosaic.rank_methods
-#> [1] "fid" "svd" "bic" "pa" 
+#> [1] "fid" "svd" "bic" "pfr" "pa" 
 #> 
 #> $moosaic.ri_column_type
 #> [1] "semi-standard non-polar"

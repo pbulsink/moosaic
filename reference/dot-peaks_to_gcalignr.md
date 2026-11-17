@@ -13,7 +13,7 @@ Convert detected peaks to GCalignR input
 - fid_peaks, tic_peaks:
 
   Tibbles from
-  [`detect_fid_peaks()`](https://pbulsink.github.io/moosaic/reference/detect_fid_peaks.md)
+  [`detect_peaks()`](https://pbulsink.github.io/moosaic/reference/detect_peaks.md)
   (applied to the FID and the TIC respectively).
 
 ## Value

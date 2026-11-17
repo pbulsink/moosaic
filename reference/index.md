@@ -14,10 +14,10 @@
   : Components as a tibble
 - [`deconvolve_run()`](https://pbulsink.github.io/moosaic/reference/deconvolve_run.md)
   : Deconvolve every FID window of a run
-- [`detect_fid_peaks()`](https://pbulsink.github.io/moosaic/reference/detect_fid_peaks.md)
-  : Detect peaks in an FID trace
 - [`detect_fid_windows()`](https://pbulsink.github.io/moosaic/reference/detect_fid_windows.md)
   : Detect deconvolution windows from the FID
+- [`detect_peaks()`](https://pbulsink.github.io/moosaic/reference/detect_peaks.md)
+  : Detect peaks in a chromatographic trace
 - [`estimate_rank()`](https://pbulsink.github.io/moosaic/reference/estimate_rank.md)
   : Estimate the number of components in a window
 - [`extract_ms_matrix()`](https://pbulsink.github.io/moosaic/reference/extract_ms_matrix.md)

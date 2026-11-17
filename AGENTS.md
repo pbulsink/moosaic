@@ -74,7 +74,8 @@ any stage.
 - `correct_baseline.R` - subtract an estimated baseline
 - `deconvolve_run.R` - deconvolve every FID window of a run \[export\]
 - `derivative_signal.R` - Savitzky-Golay derivative of a signal
-- `detect_fid_peaks.R` - detect peaks in an FID trace \[export\]
+- `detect_peaks.R` - detect peaks and shoulders in an FID or TIC trace
+  \[export\]
 - `detect_fid_windows.R` - detect deconvolution windows from the FID
   \[export\]
 - `drop_empty_mz.R` - remove m/z channels with no signal
@@ -101,7 +102,8 @@ any stage.
   \[export\]
 - `get_moosaic_option.R` - get a moosaic option by name (aborts if
   unknown)
-- `has_shoulder.R` - test a peak for an unresolved shoulder
+- `peak_shoulders.R` - locate unresolved shoulders within a peak
+- `half_width_sigma.R` - peak sigma from FWHM
 - `identify_components.R` - identify the components of a deconvolved run
   \[export\]
 - `integrate_trapezoid.R` - trapezoidal integral
@@ -133,8 +135,7 @@ any stage.
 - `permute_columns.R` - permute matrix columns independently (parallel
   analysis)
 - `polyarc_mass.R` - Polyarc mass relative to a reference peak
-- `preprocess_fid_for_detection.R` - prepare a detection copy of the FID
-  trace
+- `preprocess_for_detection.R` - prepare a detection copy of a trace
 - `print.gcms_fid_exp.R` - S3 print method \[export\]
 - `process_sample.R` - full pipeline: raw files to quantified result
   \[export\]
@@ -285,7 +286,7 @@ output.
 | `correct_baseline.R` | Subtract an estimated baseline (rolling minimum or fit) | [`.correct_baseline()`](https://pbulsink.github.io/moosaic/reference/dot-correct_baseline.md) |
 | `deconvolve_run.R` | Deconvolve every FID window of a run into components | [`deconvolve_run()`](https://pbulsink.github.io/moosaic/reference/deconvolve_run.md) |
 | `derivative_signal.R` | Savitzky-Golay derivative of a signal | [`.derivative_signal()`](https://pbulsink.github.io/moosaic/reference/dot-derivative_signal.md) |
-| `detect_fid_peaks.R` | Detect peaks (apex, bounds, shoulder) in an FID trace | [`detect_fid_peaks()`](https://pbulsink.github.io/moosaic/reference/detect_fid_peaks.md) |
+| `detect_peaks.R` | Detect peaks and shoulder rows (apex, bounds, has_shoulder, is_shoulder, parent_id) in an FID or TIC | [`detect_peaks()`](https://pbulsink.github.io/moosaic/reference/detect_peaks.md) |
 | `detect_fid_windows.R` | Merge detected peaks into deconvolution windows | [`detect_fid_windows()`](https://pbulsink.github.io/moosaic/reference/detect_fid_windows.md) |
 | `drop_empty_mz.R` | Remove m/z channels with no signal from a window matrix | [`.drop_empty_mz()`](https://pbulsink.github.io/moosaic/reference/dot-drop_empty_mz.md) |
 | `element_counts.R` | Tracked element counts for formulas (fixed column order) | [`.element_counts()`](https://pbulsink.github.io/moosaic/reference/dot-element_counts.md) |
@@ -306,7 +307,8 @@ output.
 | `from_als_output.R` | Convert an [`ALS::als()`](https://rdrr.io/pkg/ALS/man/als.html) result to moosaic structures | [`.from_als_output()`](https://pbulsink.github.io/moosaic/reference/dot-from_als_output.md) |
 | `gcms_fid_exp.R` | Create a validated gcms_fid_exp object from raw data | [`gcms_fid_exp()`](https://pbulsink.github.io/moosaic/reference/gcms_fid_exp.md) |
 | `get_moosaic_option.R` | Read one option; abort with class on unknown name | [`.get_moosaic_option()`](https://pbulsink.github.io/moosaic/reference/dot-get_moosaic_option.md) |
-| `has_shoulder.R` | Test a peak for an unresolved shoulder | [`.has_shoulder()`](https://pbulsink.github.io/moosaic/reference/dot-has_shoulder.md) |
+| `peak_shoulders.R` | Locate unresolved shoulders (noise-gated second-derivative minima) | [`.peak_shoulders()`](https://pbulsink.github.io/moosaic/reference/dot-peak_shoulders.md) |
+| `half_width_sigma.R` | Gaussian-equivalent peak sigma from FWHM (sliding shoulder noise gate) | `.half_width_sigma()` |
 | `identify_components.R` | Identify components of a deconvolved run (search + scoring) | [`identify_components()`](https://pbulsink.github.io/moosaic/reference/identify_components.md) |
 | `integrate_trapezoid.R` | Trapezoidal integral | [`.integrate_trapezoid()`](https://pbulsink.github.io/moosaic/reference/dot-integrate_trapezoid.md) |
 | `interpolate_unknowns.R` | Estimate formulas for unidentified peaks by interpolation | [`.interpolate_unknowns()`](https://pbulsink.github.io/moosaic/reference/dot-interpolate_unknowns.md) |
@@ -332,7 +334,7 @@ output.
 | `peaks_to_gcalignr.R` | Convert detected peaks to GCalignR input data frames | [`.peaks_to_gcalignr()`](https://pbulsink.github.io/moosaic/reference/dot-peaks_to_gcalignr.md) |
 | `permute_columns.R` | Permute each column independently (parallel analysis nulls) | [`.permute_columns()`](https://pbulsink.github.io/moosaic/reference/dot-permute_columns.md) |
 | `polyarc_mass.R` | Polyarc mass of a component relative to the reference peak | [`.polyarc_mass()`](https://pbulsink.github.io/moosaic/reference/dot-polyarc_mass.md) |
-| `preprocess_fid_for_detection.R` | Prepare a detection copy of the FID trace (raw untouched) | [`.preprocess_fid_for_detection()`](https://pbulsink.github.io/moosaic/reference/dot-preprocess_fid_for_detection.md) |
+| `preprocess_for_detection.R` | Prepare a detection copy of a trace (raw untouched) | [`.preprocess_for_detection()`](https://pbulsink.github.io/moosaic/reference/dot-preprocess_for_detection.md) |
 | `print.gcms_fid_exp.R` | S3 print method for gcms_fid_exp objects | [`print.gcms_fid_exp()`](https://pbulsink.github.io/moosaic/reference/print.gcms_fid_exp.md) |
 | `process_sample.R` | One-call pipeline: raw files to quantified, summarised result | [`process_sample()`](https://pbulsink.github.io/moosaic/reference/process_sample.md) |
 | `process_window.R` | Deconvolve one window (rank → constraints → ALS fit) | [`process_window()`](https://pbulsink.github.io/moosaic/reference/process_window.md) |

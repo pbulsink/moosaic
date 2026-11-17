@@ -6,7 +6,7 @@ window's data matrix by majority vote.
 ## Usage
 
 ``` r
-estimate_rank(D, fid = NULL, methods = NULL, max_rank = NULL)
+estimate_rank(D, fid = NULL, methods = NULL, max_rank = NULL, force_pa = FALSE)
 ```
 
 ## Arguments
@@ -25,13 +25,21 @@ estimate_rank(D, fid = NULL, methods = NULL, max_rank = NULL)
 
 - methods:
 
-  Character vector, any of `"fid"`, `"svd"`, `"bic"`, `"pa"`. `NULL`
-  uses the `moosaic.rank_methods` option.
+  Character vector, any of `"fid"`, `"svd"`, `"bic"`, `"pfr"`, `"pa"`.
+  `NULL` uses the `moosaic.rank_methods` option.
 
 - max_rank:
 
   Positive integer upper limit. `NULL` uses the `moosaic.rank_max`
   option. Reduced to `min(dim(D))` with a message if larger.
+
+- force_pa:
+
+  Logical flag; if `TRUE`, parallel analysis runs (when in `methods`)
+  even if the other methods agree.
+  [`process_window()`](https://pbulsink.github.io/moosaic/reference/process_window.md)
+  sets this for windows containing an FID shoulder, where the cheaper
+  votes tend to agree on too low a rank.
 
 ## Value
 
@@ -42,13 +50,13 @@ entry per method, `NA` when a method could not vote).
 ## Details
 
 Parallel analysis (`"pa"`) is skipped when at least two of the other
-methods gave a usable vote and all of them agree; `votes` then has no
-`pa` entry. Votes above `max_rank` are capped. If the consensus is 0 (no
-method finds signal), `rank` is 1, `confidence` is the share of votes
-equal to 1, and a message of class `no_signal` is emitted. The `"svd"`,
-`"bic"` and `"pa"` methods read their settings from
-`moosaic.svd_var_threshold` and `moosaic.pa_iterations`. `"pa"` uses
-random permutations; call
+methods gave a usable vote, all of them agree and `force_pa` is `FALSE`;
+`votes` then has no `pa` entry. Votes above `max_rank` are capped. If
+the consensus is 0 (no method finds signal), `rank` is 1, `confidence`
+is the share of votes equal to 1, and a message of class `no_signal` is
+emitted. The `"svd"`, `"pfr"` and `"pa"` methods read their settings
+from `moosaic.svd_var_threshold`, `moosaic.pfr_cutoff` and
+`moosaic.pa_iterations`. `"pa"` uses random permutations; call
 [`set.seed()`](https://rdrr.io/r/base/Random.html) first for
 reproducible results. The optional background component is added later,
 not here.
@@ -69,7 +77,7 @@ estimate_rank(D, list(rt = scan, intensity = rowSums(C)))
 #> [1] 1
 #> 
 #> $votes
-#> fid svd bic 
-#>   2   2   2 
+#> fid svd bic pfr 
+#>   2   2   2   2 
 #> 
 ```

@@ -3,6 +3,7 @@
 <url><loc>https://pbulsink.github.io/moosaic/AGENTS.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/LICENSE.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/articles/index.html</loc></url>
+<url><loc>https://pbulsink.github.io/moosaic/articles/moosaic-getting-started.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/articles/moosaic-params.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/authors.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/index.html</loc></url>
@@ -12,8 +13,8 @@
 <url><loc>https://pbulsink.github.io/moosaic/reference/build_ms_matrix.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/components_to_tibble.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/deconvolve_run.html</loc></url>
-<url><loc>https://pbulsink.github.io/moosaic/reference/detect_fid_peaks.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/detect_fid_windows.html</loc></url>
+<url><loc>https://pbulsink.github.io/moosaic/reference/detect_peaks.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-als_diagnostics.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-apply_alignment.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-apply_curve.html</loc></url>
@@ -51,7 +52,6 @@
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-fit_calibration.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-from_als_output.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-get_moosaic_option.html</loc></url>
-<url><loc>https://pbulsink.github.io/moosaic/reference/dot-has_shoulder.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-integrate_trapezoid.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-interpolate_unknowns.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-is_background_component.html</loc></url>
@@ -72,13 +72,15 @@
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-parse_search_results.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-parse_window.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-peak_prominence.html</loc></url>
+<url><loc>https://pbulsink.github.io/moosaic/reference/dot-peak_shoulders.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-peaks_to_gcalignr.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-permute_columns.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-polyarc_mass.html</loc></url>
-<url><loc>https://pbulsink.github.io/moosaic/reference/dot-preprocess_fid_for_detection.html</loc></url>
+<url><loc>https://pbulsink.github.io/moosaic/reference/dot-preprocess_for_detection.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-rank_bic.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-rank_fid.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-rank_pa.html</loc></url>
+<url><loc>https://pbulsink.github.io/moosaic/reference/dot-rank_pfr.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-rank_svd.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-recovery_excluded.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-reference_peak_ok.html</loc></url>
