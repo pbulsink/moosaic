@@ -5,7 +5,7 @@
 #'
 #' @param window A one-row data frame such as a row of [detect_fid_windows()],
 #'   or a list with `start_rt`, `end_rt` and optional `window_id` and
-#'   `shoulder`. When `shoulder` is `TRUE`, [estimate_rank()] always runs
+#'   `has_shoulder`. When `has_shoulder` is `TRUE`, [estimate_rank()] always runs
 #'   parallel analysis, since an unresolved shoulder is easily outvoted by
 #'   the cheaper rank methods.
 #' @param exp A `gcms_fid_exp` object, ideally after [align_detectors()].
@@ -29,7 +29,7 @@ process_window <- function(window, exp) {
   rk <- estimate_rank(
     mm$D,
     fid_det,
-    force_pa = isTRUE(window[["shoulder"]])
+    force_pa = isTRUE(window[["has_shoulder"]])
   )
   # The background column also needs a degree of freedom in tiny windows
   rank <- max(1L, min(rk$rank, min(dim(mm$D)) - bg))

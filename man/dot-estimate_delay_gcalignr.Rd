@@ -13,7 +13,7 @@
 )
 }
 \arguments{
-\item{fid_peaks, tic_peaks}{Peak tibbles from \code{\link[=detect_fid_peaks]{detect_fid_peaks()}} for the
+\item{fid_peaks, tic_peaks}{Peak tibbles from \code{\link[=detect_peaks]{detect_peaks()}} for the
 FID and the TIC.}
 
 \item{max_delay}{Numeric; largest linear shift to consider (min).}

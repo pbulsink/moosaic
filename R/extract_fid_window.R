@@ -30,7 +30,7 @@
       call = call
     )
   }
-  fid <- if (raw) exp$fid else .preprocess_fid_for_detection(exp$fid)
+  fid <- if (raw) exp$fid else .preprocess_for_detection(exp$fid)
   y <- .resample_fid_to_scans(
     fid$rt,
     fid$intensity,

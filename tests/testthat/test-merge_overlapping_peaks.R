@@ -5,7 +5,7 @@ mk <- function(s, e) {
     start_rt = s,
     end_rt = e,
     height = rep(1, length(s)),
-    shoulder = rep(FALSE, length(s))
+    has_shoulder = rep(FALSE, length(s))
   )
 }
 

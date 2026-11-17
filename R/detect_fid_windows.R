@@ -1,14 +1,14 @@
 #' Detect deconvolution windows from the FID
 #'
-#' Finds FID peaks with [detect_fid_peaks()] and merges them into padded
-#' windows.
+#' Finds FID peaks (including shoulders) with [detect_peaks()] and merges them
+#' into padded windows.
 #'
 #' @param exp A `gcms_fid_exp` object.
 #'
 #' @return A tibble with `window_id`, `start_rt`, `end_rt` (FID time, min),
 #'   `n_peaks`, `peak_ids`, `n_scans` (MS scans inside the window after
-#'   removing the alignment delay) and `shoulder` (logical; any peak in the
-#'   window has an unresolved shoulder). The peak table is attached as
+#'   removing the alignment delay) and `has_shoulder` (logical; any peak in
+#'   the window has an unresolved shoulder). The peak table is attached as
 #'   `attr(, "peaks")`. `exp` is not modified.
 #'
 #' @details Padding and merge gap come from the `moosaic.window_padding` and
@@ -29,7 +29,7 @@ detect_fid_windows <- function(exp) {
       call = rlang::current_env()
     )
   }
-  peaks <- detect_fid_peaks(exp$fid)
+  peaks <- detect_peaks(exp$fid)
   windows <- .merge_overlapping_peaks(
     peaks,
     padding = .get_moosaic_option("window_padding"),
@@ -41,9 +41,9 @@ detect_fid_windows <- function(exp) {
     \(i) sum(scan_rt >= windows$start_rt[i] & scan_rt <= windows$end_rt[i]),
     integer(1)
   )
-  windows$shoulder <- vapply(
+  windows$has_shoulder <- vapply(
     windows$peak_ids,
-    \(ids) any(peaks$shoulder[peaks$peak_id %in% ids]),
+    \(ids) any(peaks$has_shoulder[peaks$peak_id %in% ids]),
     logical(1)
   )
   min_scans <- .get_moosaic_option("min_scans_per_window")

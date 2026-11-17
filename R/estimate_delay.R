@@ -47,8 +47,9 @@
     engine,
     gcalignr = list(
       delay = .estimate_delay_gcalignr(
-        detect_fid_peaks(fid),
-        detect_fid_peaks(tic),
+        # Shoulders are unreliable on the coarse TIC and add false matches
+        detect_peaks(fid, include_shoulders = FALSE),
+        detect_peaks(tic, include_shoulders = FALSE),
         max_delay,
         step,
         call = call

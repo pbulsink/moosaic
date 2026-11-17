@@ -45,7 +45,7 @@ Automated data extraction, deconvolution, and spectral searching for GC-FID/MS d
 - `correct_baseline.R` - subtract an estimated baseline
 - `deconvolve_run.R` - deconvolve every FID window of a run [export]
 - `derivative_signal.R` - Savitzky-Golay derivative of a signal
-- `detect_fid_peaks.R` - detect peaks in an FID trace [export]
+- `detect_peaks.R` - detect peaks and shoulders in an FID or TIC trace [export]
 - `detect_fid_windows.R` - detect deconvolution windows from the FID [export]
 - `drop_empty_mz.R` - remove m/z channels with no signal
 - `element_counts.R` - tracked element counts for formulas
@@ -66,7 +66,8 @@ Automated data extraction, deconvolution, and spectral searching for GC-FID/MS d
 - `from_als_output.R` - convert an `ALS::als()` result to moosaic structures
 - `gcms_fid_exp.R` - create a gcms_fid_exp object from raw data [export]
 - `get_moosaic_option.R` - get a moosaic option by name (aborts if unknown)
-- `has_shoulder.R` - test a peak for an unresolved shoulder
+- `peak_shoulders.R` - locate unresolved shoulders within a peak
+- `half_width_sigma.R` - peak sigma from FWHM
 - `identify_components.R` - identify the components of a deconvolved run [export]
 - `integrate_trapezoid.R` - trapezoidal integral
 - `interpolate_unknowns.R` - estimate formulas for unidentified peaks
@@ -92,7 +93,7 @@ Automated data extraction, deconvolution, and spectral searching for GC-FID/MS d
 - `peaks_to_gcalignr.R` - convert detected peaks to GCalignR input
 - `permute_columns.R` - permute matrix columns independently (parallel analysis)
 - `polyarc_mass.R` - Polyarc mass relative to a reference peak
-- `preprocess_fid_for_detection.R` - prepare a detection copy of the FID trace
+- `preprocess_for_detection.R` - prepare a detection copy of a trace
 - `print.gcms_fid_exp.R` - S3 print method [export]
 - `process_sample.R` - full pipeline: raw files to quantified result [export]
 - `process_window.R` - deconvolve one window [export]
@@ -193,7 +194,7 @@ One function per file: exported functions are the public API (32 exports plus `.
 | `correct_baseline.R` | Subtract an estimated baseline (rolling minimum or fit) | `.correct_baseline()` |
 | `deconvolve_run.R` | Deconvolve every FID window of a run into components | `deconvolve_run()` |
 | `derivative_signal.R` | Savitzky-Golay derivative of a signal | `.derivative_signal()` |
-| `detect_fid_peaks.R` | Detect peaks (apex, bounds, shoulder) in an FID trace | `detect_fid_peaks()` |
+| `detect_peaks.R` | Detect peaks and shoulder rows (apex, bounds, has_shoulder, is_shoulder, parent_id) in an FID or TIC | `detect_peaks()` |
 | `detect_fid_windows.R` | Merge detected peaks into deconvolution windows | `detect_fid_windows()` |
 | `drop_empty_mz.R` | Remove m/z channels with no signal from a window matrix | `.drop_empty_mz()` |
 | `element_counts.R` | Tracked element counts for formulas (fixed column order) | `.element_counts()` |
@@ -214,7 +215,8 @@ One function per file: exported functions are the public API (32 exports plus `.
 | `from_als_output.R` | Convert an `ALS::als()` result to moosaic structures | `.from_als_output()` |
 | `gcms_fid_exp.R` | Create a validated gcms_fid_exp object from raw data | `gcms_fid_exp()` |
 | `get_moosaic_option.R` | Read one option; abort with class on unknown name | `.get_moosaic_option()` |
-| `has_shoulder.R` | Test a peak for an unresolved shoulder | `.has_shoulder()` |
+| `peak_shoulders.R` | Locate unresolved shoulders (noise-gated second-derivative minima) | `.peak_shoulders()` |
+| `half_width_sigma.R` | Gaussian-equivalent peak sigma from FWHM (sliding shoulder noise gate) | `.half_width_sigma()` |
 | `identify_components.R` | Identify components of a deconvolved run (search + scoring) | `identify_components()` |
 | `integrate_trapezoid.R` | Trapezoidal integral | `.integrate_trapezoid()` |
 | `interpolate_unknowns.R` | Estimate formulas for unidentified peaks by interpolation | `.interpolate_unknowns()` |
@@ -240,7 +242,7 @@ One function per file: exported functions are the public API (32 exports plus `.
 | `peaks_to_gcalignr.R` | Convert detected peaks to GCalignR input data frames | `.peaks_to_gcalignr()` |
 | `permute_columns.R` | Permute each column independently (parallel analysis nulls) | `.permute_columns()` |
 | `polyarc_mass.R` | Polyarc mass of a component relative to the reference peak | `.polyarc_mass()` |
-| `preprocess_fid_for_detection.R` | Prepare a detection copy of the FID trace (raw untouched) | `.preprocess_fid_for_detection()` |
+| `preprocess_for_detection.R` | Prepare a detection copy of a trace (raw untouched) | `.preprocess_for_detection()` |
 | `print.gcms_fid_exp.R` | S3 print method for gcms_fid_exp objects | `print.gcms_fid_exp()` |
 | `process_sample.R` | One-call pipeline: raw files to quantified, summarised result | `process_sample()` |
 | `process_window.R` | Deconvolve one window (rank → constraints → ALS fit) | `process_window()` |

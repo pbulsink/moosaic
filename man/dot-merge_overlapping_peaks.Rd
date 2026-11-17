@@ -7,7 +7,7 @@
 .merge_overlapping_peaks(peaks, padding, gap)
 }
 \arguments{
-\item{peaks}{Tibble from \code{\link[=detect_fid_peaks]{detect_fid_peaks()}}.}
+\item{peaks}{Tibble from \code{\link[=detect_peaks]{detect_peaks()}}.}
 
 \item{padding}{Numeric; minutes added to each side of every peak.}
 

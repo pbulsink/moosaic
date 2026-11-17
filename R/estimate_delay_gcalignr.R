@@ -1,6 +1,6 @@
 #' Estimate detector delay with GCalignR
 #'
-#' @param fid_peaks,tic_peaks Peak tibbles from [detect_fid_peaks()] for the
+#' @param fid_peaks,tic_peaks Peak tibbles from [detect_peaks()] for the
 #'   FID and the TIC.
 #' @param max_delay Numeric; largest linear shift to consider (min).
 #' @param step Numeric; shift search step (min).

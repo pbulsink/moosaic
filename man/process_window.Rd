@@ -9,7 +9,7 @@ process_window(window, exp)
 \arguments{
 \item{window}{A one-row data frame such as a row of \code{\link[=detect_fid_windows]{detect_fid_windows()}},
 or a list with \code{start_rt}, \code{end_rt} and optional \code{window_id} and
-\code{shoulder}. When \code{shoulder} is \code{TRUE}, \code{\link[=estimate_rank]{estimate_rank()}} always runs
+\code{has_shoulder}. When \code{has_shoulder} is \code{TRUE}, \code{\link[=estimate_rank]{estimate_rank()}} always runs
 parallel analysis, since an unresolved shoulder is easily outvoted by
 the cheaper rank methods.}
 

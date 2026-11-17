@@ -1,6 +1,6 @@
 #' Merge peaks into deconvolution windows
 #'
-#' @param peaks Tibble from [detect_fid_peaks()].
+#' @param peaks Tibble from [detect_peaks()].
 #' @param padding Numeric; minutes added to each side of every peak.
 #' @param gap Numeric; padded intervals separated by no more than this many
 #'   minutes are merged.

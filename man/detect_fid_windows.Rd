@@ -12,13 +12,13 @@ detect_fid_windows(exp)
 \value{
 A tibble with \code{window_id}, \code{start_rt}, \code{end_rt} (FID time, min),
 \code{n_peaks}, \code{peak_ids}, \code{n_scans} (MS scans inside the window after
-removing the alignment delay) and \code{shoulder} (logical; any peak in the
-window has an unresolved shoulder). The peak table is attached as
+removing the alignment delay) and \code{has_shoulder} (logical; any peak in
+the window has an unresolved shoulder). The peak table is attached as
 \code{attr(, "peaks")}. \code{exp} is not modified.
 }
 \description{
-Finds FID peaks with \code{\link[=detect_fid_peaks]{detect_fid_peaks()}} and merges them into padded
-windows.
+Finds FID peaks (including shoulders) with \code{\link[=detect_peaks]{detect_peaks()}} and merges them
+into padded windows.
 }
 \details{
 Padding and merge gap come from the \code{moosaic.window_padding} and

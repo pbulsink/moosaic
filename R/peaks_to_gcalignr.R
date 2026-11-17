@@ -1,6 +1,6 @@
 #' Convert detected peaks to GCalignR input
 #'
-#' @param fid_peaks,tic_peaks Tibbles from [detect_fid_peaks()] (applied to
+#' @param fid_peaks,tic_peaks Tibbles from [detect_peaks()] (applied to
 #'   the FID and the TIC respectively).
 #'
 #' @return A named list of two data frames, `fid` and `tic`, each with numeric

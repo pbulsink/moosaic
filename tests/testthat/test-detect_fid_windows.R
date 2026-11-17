@@ -26,19 +26,21 @@ test_that("detect_fid_windows() flags windows containing a shoulder peak", {
     carbons = c(1, 2)
   )
   local_mocked_bindings(
-    detect_fid_peaks = \(...) {
+    detect_peaks = \(...) {
       tibble::tibble(
         peak_id = 1:3,
         apex_rt = c(5, 10, 10.05),
         start_rt = c(4.9, 9.9, 10.0),
         end_rt = c(5.1, 10.04, 10.15),
         height = 1,
-        shoulder = c(FALSE, FALSE, TRUE)
+        has_shoulder = c(FALSE, FALSE, TRUE),
+        is_shoulder = FALSE,
+        parent_id = NA_integer_
       )
     }
   )
   w <- detect_fid_windows(exp)
-  expect_equal(w$shoulder, c(FALSE, TRUE))
+  expect_equal(w$has_shoulder, c(FALSE, TRUE))
 })
 
 test_that("detect_fid_windows() warns about windows with few MS scans", {

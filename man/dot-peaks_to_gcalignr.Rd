@@ -7,7 +7,7 @@
 .peaks_to_gcalignr(fid_peaks, tic_peaks)
 }
 \arguments{
-\item{fid_peaks, tic_peaks}{Tibbles from \code{\link[=detect_fid_peaks]{detect_fid_peaks()}} (applied to
+\item{fid_peaks, tic_peaks}{Tibbles from \code{\link[=detect_peaks]{detect_peaks()}} (applied to
 the FID and the TIC respectively).}
 }
 \value{

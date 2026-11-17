@@ -182,7 +182,7 @@ between the FID and the MS before any windowing.
 ## FID peak detection
 
 Options used when peaks are detected on the *processed copy* of the FID trace
-(`detect_fid_peaks()`). The raw FID is never modified — quantification always
+(`detect_peaks()`). The raw FID is never modified — quantification always
 integrates raw areas — so these options affect window placement and rank votes,
 never measured amounts.
 

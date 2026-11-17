@@ -53,7 +53,7 @@ test_that("process_window() forces parallel analysis only for shoulder windows",
   )
   exp <- mk_pair()
   expect_error(
-    process_window(c(pair_window, shoulder = TRUE), exp),
+    process_window(c(pair_window, has_shoulder = TRUE), exp),
     "stop after rank"
   )
   expect_error(process_window(pair_window, exp), "stop after rank")
