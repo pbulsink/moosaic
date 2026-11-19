@@ -74,6 +74,12 @@ A named list of defaults (not assigned to
 #> $moosaic.window_merge_gap
 #> [1] 0.01
 #> 
+#> $moosaic.window_max_width
+#> [1] 0.5
+#> 
+#> $moosaic.window_max_peaks
+#> [1] 4
+#> 
 #> $moosaic.min_scans_per_window
 #> [1] 8
 #> 

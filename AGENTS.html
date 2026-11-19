@@ -21,6 +21,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="articles/moosaic-getting-started.html">Getting Started with Moosaic</a></li>
     <li><a class="dropdown-item" href="articles/moosaic-params.html">Moosaic Operating Parameters</a></li>
   </ul></li>
+<li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json"></form></li>
       </ul></div>
@@ -47,7 +48,7 @@
 </ul><div class="section level2">
 <h2 id="package-overview">Package Overview<a class="anchor" aria-label="anchor" href="#package-overview"></a></h2>
 <p>Automated data extraction, deconvolution, and spectral searching for GC-FID/MS data. The pipeline is: <code><a href="reference/read_experiment.html">read_experiment()</a></code> → <code><a href="reference/align_detectors.html">align_detectors()</a></code> → FID peak/window detection → per-window rank estimation → FID-derived constraints → MCR-ALS fit (<code><a href="reference/fit_window.html">fit_window()</a></code>) → components → library search (mspepsearchr) → RI + element-penalty scoring → Polyarc quantification (<code><a href="reference/quantify.html">quantify()</a></code>) → reports (<code><a href="reference/summarize_report.html">summarize_report()</a></code>, <code><a href="reference/write_excel_report.html">write_excel_report()</a></code>, <code><a href="reference/write_pdf_report.html">write_pdf_report()</a></code>). The one-call entry point is <code><a href="reference/process_sample.html">process_sample()</a></code>.</p>
-<p><code>.posit/SPEC.md</code> is the authoritative design document (draft v2): conventions, per-stage file/function tables, testing strategy, options reference, and a decisions log. Read it before implementing or modifying any stage.</p>
+<p><code>.posit/plans/SPEC.md</code> is the authoritative design document (draft v2): conventions, per-stage file/function tables, testing strategy, options reference, and a decisions log. Read it before implementing or modifying any stage.</p>
 </div>
 <div class="section level2">
 <h2 id="project-structure">Project Structure<a class="anchor" aria-label="anchor" href="#project-structure"></a></h2>
@@ -325,7 +326,7 @@
 <div class="section level3">
 <h3 id="other">Other<a class="anchor" aria-label="anchor" href="#other"></a></h3>
 <ul><li>
-<code>.posit/SPEC.md</code> - package specification (authoritative design doc; draft v2, decisions log in section 19)</li>
+<code>.posit/plans/SPEC.md</code> - package specification (authoritative design doc; draft v2, decisions log in section 19)</li>
 <li>
 <code>inst/report/report.qmd</code> - Quarto template rendered by <code><a href="reference/write_pdf_report.html">write_pdf_report()</a></code>
 </li>
@@ -339,7 +340,7 @@
 </div>
 <div class="section level2">
 <h2 id="architecture-summary">Architecture Summary<a class="anchor" aria-label="anchor" href="#architecture-summary"></a></h2>
-<p>One function per file: exported functions are the public API (32 exports plus <code><a href="reference/dot-moosaic_default_options.html">.moosaic_default_options()</a></code> and the S3 print method); everything else is a dot-prefixed internal helper co-located with its module. Internal data flow follows the pipeline stages in <code>.posit/SPEC.md</code> section 17; raw FID intensities are never modified (detection works on processed copies), and MS spectra are normalised to max = 1 internally, scaled to max 999 for search/MSP output.</p>
+<p>One function per file: exported functions are the public API (32 exports plus <code><a href="reference/dot-moosaic_default_options.html">.moosaic_default_options()</a></code> and the S3 print method); everything else is a dot-prefixed internal helper co-located with its module. Internal data flow follows the pipeline stages in <code>.posit/plans/SPEC.md</code> section 17; raw FID intensities are never modified (detection works on processed copies), and MS spectra are normalised to max = 1 internally, scaled to max 999 for search/MSP output.</p>
 <table class="table"><colgroup><col width="22%"><col width="22%"><col width="55%"></colgroup><thead><tr><th>File</th>
 <th>Role</th>
 <th>Key Functions</th>
@@ -502,7 +503,7 @@
 <td><code><a href="reference/dot-peak_shoulders.html">.peak_shoulders()</a></code></td>
 </tr><tr><td><code>half_width_sigma.R</code></td>
 <td>Gaussian-equivalent peak sigma from FWHM (sliding shoulder noise gate)</td>
-<td><code>.half_width_sigma()</code></td>
+<td><code><a href="reference/dot-half_width_sigma.html">.half_width_sigma()</a></code></td>
 </tr><tr><td><code>identify_components.R</code></td>
 <td>Identify components of a deconvolved run (search + scoring)</td>
 <td><code><a href="reference/identify_components.html">identify_components()</a></code></td>
@@ -726,7 +727,7 @@
 <p>This section describes the typical development and testing workflow for this package. Agents should follow these steps when making changes:</p>
 <div class="section level3">
 <h3 id="id_1-understand-the-code-path">1. Understand the Code Path<a class="anchor" aria-label="anchor" href="#id_1-understand-the-code-path"></a></h3>
-<ul><li>Read <code>.posit/SPEC.md</code> first: it defines each stage’s file/function table, data structures, options, and the decisions log (section 19).</li>
+<ul><li>Read <code>.posit/plans/SPEC.md</code> first: it defines each stage’s file/function table, data structures, options, and the decisions log (section 19).</li>
 <li>Read roxygen documentation in <code>R/*.R</code> to understand function purposes and signatures; every function (including internal) has full roxygen.</li>
 <li>Trace data flow through the pipeline stages (<code><a href="reference/process_sample.html">process_sample()</a></code> is the reference order); identify which files are affected by the proposed change.</li>
 </ul></div>
@@ -750,7 +751,7 @@
 <div class="section level3">
 <h3 id="id_4-update-documentation">4. Update Documentation<a class="anchor" aria-label="anchor" href="#id_4-update-documentation"></a></h3>
 <ul><li>Regenerate man pages and NAMESPACE: <code>roxygen2::roxygenise()</code> (or <code>devtools::document()</code>). Never edit <code>NAMESPACE</code> or <code>man/*.Rd</code> by hand — they are generated from roxygen comments.</li>
-<li>Update <code>.posit/SPEC.md</code> if the change alters a stage’s contract, options table, or data structures; record decisions in its log (section 19).</li>
+<li>Update <code>.posit/plans/SPEC.md</code> if the change alters a stage’s contract, options table, or data structures; record decisions in its log (section 19).</li>
 </ul></div>
 <div class="section level3">
 <h3 id="id_5-verify-build">5. Verify Build<a class="anchor" aria-label="anchor" href="#id_5-verify-build"></a></h3>

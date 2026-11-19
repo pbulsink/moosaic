@@ -21,6 +21,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/moosaic-getting-started.html">Getting Started with Moosaic</a></li>
     <li><a class="dropdown-item" href="../articles/moosaic-params.html">Moosaic Operating Parameters</a></li>
   </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
       </ul></div>
@@ -47,10 +48,11 @@
 <span>  <span class="va">apex</span>,</span>
 <span>  <span class="va">start</span>,</span>
 <span>  <span class="va">end</span>,</span>
-<span>  depth_frac <span class="op">=</span> <span class="fl">0.2</span>,</span>
-<span>  width_frac <span class="op">=</span> <span class="fl">0.12</span>,</span>
+<span>  depth_frac <span class="op">=</span> <span class="fl">0.02</span>,</span>
+<span>  width_frac <span class="op">=</span> <span class="fl">0.18</span>,</span>
 <span>  noise <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  noise_k <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  noise_k <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">5</span><span class="op">)</span>,</span>
+<span>  slide_sigma <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  min_height <span class="op">=</span> <span class="fl">0</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -72,8 +74,8 @@
 
 
 <dt id="arg-depth-frac">depth_frac<a class="anchor" aria-label="anchor" href="#arg-depth-frac"></a></dt>
-<dd><p>Numeric; a second-derivative minimum must reach this
-fraction of the deepest minimum in the peak to count.</p></dd>
+<dd><p>Numeric; a second-derivative dip must have a prominence
+of at least this fraction of the apex's second-derivative depth.</p></dd>
 
 
 <dt id="arg-width-frac">width_frac<a class="anchor" aria-label="anchor" href="#arg-width-frac"></a></dt>
@@ -82,14 +84,20 @@ the peak width in points (adapts to peak width and sampling rate).</p></dd>
 
 
 <dt id="arg-noise">noise<a class="anchor" aria-label="anchor" href="#arg-noise"></a></dt>
-<dd><p>Numeric; white-noise SD of the unsmoothed signal. A minimum
-must also be deeper than <code>noise_k</code> times the noise propagated through
-the second-derivative filter, and the signal at the shoulder must be at
-least <code>min_height</code>. The default <code>0</code> disables both checks.</p></dd>
+<dd><p>Numeric; white-noise SD of the unsmoothed signal. The dip
+prominence must also reach a sliding multiple of the noise propagated
+through the second-derivative filter (see Details). <code>0</code> disables the
+noise gate.</p></dd>
 
 
 <dt id="arg-noise-k">noise_k<a class="anchor" aria-label="anchor" href="#arg-noise-k"></a></dt>
-<dd><p>Numeric; multiple of the second-derivative noise SD.</p></dd>
+<dd><p>Numeric length 2; noise multiples at the apex and on the
+flank (from <code>slide_sigma</code> peak sigmas outward).</p></dd>
+
+
+<dt id="arg-slide-sigma">slide_sigma<a class="anchor" aria-label="anchor" href="#arg-slide-sigma"></a></dt>
+<dd><p>Numeric; distance from the apex, in peak sigmas, over
+which the multiple falls linearly from <code>noise_k[1]</code> to <code>noise_k[2]</code>.</p></dd>
 
 
 <dt id="arg-min-height">min_height<a class="anchor" aria-label="anchor" href="#arg-min-height"></a></dt>
@@ -99,8 +107,25 @@ least <code>min_height</code>. The default <code>0</code> disables both checks.<
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>Integer vector (possibly empty, sorted) of indices into <code>y</code> of
-second-derivative minima inside the peak that are not explained by the
+second-derivative dips inside the peak that are not explained by the
 apex. Each marks an unresolved overlapping component.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>A dip is a local minimum of the second derivative, measured by its
+prominence (depth below the lower flanking maximum) rather than by its
+sign, so a small component on the flank of a larger peak, where the
+second derivative is positive, is still found. On synthetic Gaussians at
+moderate noise, a 10% component 3 sigma from the apex is reliably found;
+5% components, or components 2.5 sigma or less away, generally are not:
+their dips are no larger than noise dips.</p>
+<p>The noise gate slides with distance from the apex. Peak sigma is
+estimated from the full width at half maximum (FWHM / 2.355) of <code>y</code>. A dip
+<code>d</code> sigmas from the apex must reach
+<code>k(d) = noise_k[1] + (noise_k[2] - noise_k[1]) * min(d / slide_sigma, 1)</code>
+times the second-derivative noise. Ragged or flat tops near the apex are
+held to a stricter standard than flank shoulders, where real minor
+components appear.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

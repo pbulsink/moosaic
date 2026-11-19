@@ -21,6 +21,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/moosaic-getting-started.html">Getting Started with Moosaic</a></li>
     <li><a class="dropdown-item" href="../articles/moosaic-params.html">Moosaic Operating Parameters</a></li>
   </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
       </ul></div>
@@ -77,11 +78,18 @@ window's scans.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>List of <code>moosaic_component</code> objects, one per fitted column. <code>rt</code> is
-the time of the maximum of the fitted profile; <code>area_fid</code> is the apportioned
+    <p>List of <code>moosaic_component</code> objects, one per retained column. <code>rt</code> is
+the time of the profile maximum; <code>area_fid</code> is the apportioned
 raw FID area (<code>NA</code> for background); <code>area_ms</code> is the area of the fitted
 profile scaled by the summed spectrum; <code>fid_ms_ratio</code> is their quotient;
 <code>residual</code> is the window's lack of fit (%).</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>For localized windows, only apexes in the ownership core are kept
+(left closed, right open unless <code>core_last</code>). FID areas are apportioned
+among retained analytes within the core, interpolating its endpoints to
+avoid gaps or double integration. MS areas and profiles use the full fit.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

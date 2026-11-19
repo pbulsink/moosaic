@@ -40,8 +40,15 @@ Turn a window fit into components
 
 ## Value
 
-List of `moosaic_component` objects, one per fitted column. `rt` is the
-time of the maximum of the fitted profile; `area_fid` is the apportioned
-raw FID area (`NA` for background); `area_ms` is the area of the fitted
-profile scaled by the summed spectrum; `fid_ms_ratio` is their quotient;
+List of `moosaic_component` objects, one per retained column. `rt` is
+the time of the profile maximum; `area_fid` is the apportioned raw FID
+area (`NA` for background); `area_ms` is the area of the fitted profile
+scaled by the summed spectrum; `fid_ms_ratio` is their quotient;
 `residual` is the window's lack of fit (%).
+
+## Details
+
+For localized windows, only apexes in the ownership core are kept (left
+closed, right open unless `core_last`). FID areas are apportioned among
+retained analytes within the core, interpolating its endpoints to avoid
+gaps or double integration. MS areas and profiles use the full fit.

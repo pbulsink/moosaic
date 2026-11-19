@@ -25,6 +25,7 @@ quantify() and (by default) summarize_report()."><meta property="og:image" conte
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/moosaic-getting-started.html">Getting Started with Moosaic</a></li>
     <li><a class="dropdown-item" href="../articles/moosaic-params.html">Moosaic Operating Parameters</a></li>
   </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
       </ul></div>
@@ -55,7 +56,8 @@ FID baseline check, <code><a href="deconvolve_run.html">deconvolve_run()</a></co
 <span>  style <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  reference_peak <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  include_solvents <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  summarize <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  summarize <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -83,6 +85,10 @@ files.</p></dd>
 <dt id="arg-include-solvents-summarize">include_solvents, summarize<a class="anchor" aria-label="anchor" href="#arg-include-solvents-summarize"></a></dt>
 <dd><p>Whether to include solvent peaks in the
 summary, and whether to run <code><a href="summarize_report.html">summarize_report()</a></code> at all.</p></dd>
+
+
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
+<dd><p>Whether to print detailed information about the processing steps.</p></dd>
 
 </dl></div>
     <div class="section level2">

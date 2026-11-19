@@ -110,6 +110,12 @@ moosaic_options()
 #> $moosaic.svd_var_threshold
 #> [1] 0.99
 #> 
+#> $moosaic.window_max_peaks
+#> [1] 4
+#> 
+#> $moosaic.window_max_width
+#> [1] 0.5
+#> 
 #> $moosaic.window_merge_gap
 #> [1] 0.01
 #> 

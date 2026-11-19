@@ -30,7 +30,7 @@ scoring → Polyarc quantification
 The one-call entry point is
 [`process_sample()`](https://pbulsink.github.io/moosaic/reference/process_sample.md).
 
-`.posit/SPEC.md` is the authoritative design document (draft v2):
+`.posit/plans/SPEC.md` is the authoritative design document (draft v2):
 conventions, per-stage file/function tables, testing strategy, options
 reference, and a decisions log. Read it before implementing or modifying
 any stage.
@@ -230,8 +230,8 @@ separate or renamed test files. The only extra test files are the
 
 ### Other
 
-- `.posit/SPEC.md` - package specification (authoritative design doc;
-  draft v2, decisions log in section 19)
+- `.posit/plans/SPEC.md` - package specification (authoritative design
+  doc; draft v2, decisions log in section 19)
 - `inst/report/report.qmd` - Quarto template rendered by
   [`write_pdf_report()`](https://pbulsink.github.io/moosaic/reference/write_pdf_report.md)
 - `dev/` - development notes and challenge register (Rbuildignored;
@@ -249,10 +249,10 @@ plus
 [`.moosaic_default_options()`](https://pbulsink.github.io/moosaic/reference/dot-moosaic_default_options.md)
 and the S3 print method); everything else is a dot-prefixed internal
 helper co-located with its module. Internal data flow follows the
-pipeline stages in `.posit/SPEC.md` section 17; raw FID intensities are
-never modified (detection works on processed copies), and MS spectra are
-normalised to max = 1 internally, scaled to max 999 for search/MSP
-output.
+pipeline stages in `.posit/plans/SPEC.md` section 17; raw FID
+intensities are never modified (detection works on processed copies),
+and MS spectra are normalised to max = 1 internally, scaled to max 999
+for search/MSP output.
 
 | File | Role | Key Functions |
 |----|----|----|
@@ -308,7 +308,7 @@ output.
 | `gcms_fid_exp.R` | Create a validated gcms_fid_exp object from raw data | [`gcms_fid_exp()`](https://pbulsink.github.io/moosaic/reference/gcms_fid_exp.md) |
 | `get_moosaic_option.R` | Read one option; abort with class on unknown name | [`.get_moosaic_option()`](https://pbulsink.github.io/moosaic/reference/dot-get_moosaic_option.md) |
 | `peak_shoulders.R` | Locate unresolved shoulders (noise-gated second-derivative minima) | [`.peak_shoulders()`](https://pbulsink.github.io/moosaic/reference/dot-peak_shoulders.md) |
-| `half_width_sigma.R` | Gaussian-equivalent peak sigma from FWHM (sliding shoulder noise gate) | `.half_width_sigma()` |
+| `half_width_sigma.R` | Gaussian-equivalent peak sigma from FWHM (sliding shoulder noise gate) | [`.half_width_sigma()`](https://pbulsink.github.io/moosaic/reference/dot-half_width_sigma.md) |
 | `identify_components.R` | Identify components of a deconvolved run (search + scoring) | [`identify_components()`](https://pbulsink.github.io/moosaic/reference/identify_components.md) |
 | `integrate_trapezoid.R` | Trapezoidal integral | [`.integrate_trapezoid()`](https://pbulsink.github.io/moosaic/reference/dot-integrate_trapezoid.md) |
 | `interpolate_unknowns.R` | Estimate formulas for unidentified peaks by interpolation | [`.interpolate_unknowns()`](https://pbulsink.github.io/moosaic/reference/dot-interpolate_unknowns.md) |
@@ -396,8 +396,9 @@ this package. Agents should follow these steps when making changes:
 
 ### 1. Understand the Code Path
 
-- Read `.posit/SPEC.md` first: it defines each stage’s file/function
-  table, data structures, options, and the decisions log (section 19).
+- Read `.posit/plans/SPEC.md` first: it defines each stage’s
+  file/function table, data structures, options, and the decisions log
+  (section 19).
 - Read roxygen documentation in `R/*.R` to understand function purposes
   and signatures; every function (including internal) has full roxygen.
 - Trace data flow through the pipeline stages
@@ -462,7 +463,7 @@ this package. Agents should follow these steps when making changes:
 - Regenerate man pages and NAMESPACE: `roxygen2::roxygenise()` (or
   `devtools::document()`). Never edit `NAMESPACE` or `man/*.Rd` by hand
   — they are generated from roxygen comments.
-- Update `.posit/SPEC.md` if the change alters a stage’s contract,
+- Update `.posit/plans/SPEC.md` if the change alters a stage’s contract,
   options table, or data structures; record decisions in its log
   (section 19).
 

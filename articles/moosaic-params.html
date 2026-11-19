@@ -36,6 +36,7 @@
     <li><a class="dropdown-item" href="../articles/moosaic-params.html">Moosaic Operating Parameters</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -469,6 +470,17 @@ are merged into the retention-time domains that MCR-ALS fits.</p>
 (min)</td>
 </tr>
 <tr class="odd">
+<td><code>moosaic.window_max_width</code></td>
+<td><code>0.5</code></td>
+<td>Maximum ownership-core width (min); <code>Inf</code> disables</td>
+</tr>
+<tr class="even">
+<td><code>moosaic.window_max_peaks</code></td>
+<td><code>4L</code></td>
+<td>Target maximum FID apexes per ownership core; <code>Inf</code>
+disables</td>
+</tr>
+<tr class="odd">
 <td><code>moosaic.min_scans_per_window</code></td>
 <td><code>8L</code></td>
 <td>Minimum MS scans per window before a warning is issued</td>
@@ -489,6 +501,20 @@ peaks (those stay separate unless the padded intervals fall within
 peaks whose intervals are separated by at most this many minutes are
 merged into a single deconvolution window; wider separations start a new
 one.</li>
+<li>
+<strong>Localized fitting</strong> — merged regions are divided
+between apexes into cores containing at most
+<code>moosaic.window_max_peaks</code> detections, then subdivided to
+meet <code>moosaic.window_max_width</code>. Coincident apexes remain
+together. Each fit includes padding around its core, but only analytes
+whose fitted apex belongs to that core are returned. Shared boundaries
+belong to the core on the right; raw FID area is integrated only within
+each core, preventing overlapping fit context from being counted twice.
+Very narrow fit intervals expand to include two available MS scans. Set
+both limits to <code>Inf</code> to restore legacy merging. Localization
+removes a single rank cap over a long crowded region; it does not
+guarantee a particular peak count or eliminate shifted duplicate
+fits.</li>
 <li>
 <strong><code>moosaic.min_scans_per_window</code></strong> — windows
 containing fewer MS scans than this emit a warning of class

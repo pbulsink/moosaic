@@ -7,6 +7,7 @@
 <url><loc>https://pbulsink.github.io/moosaic/articles/moosaic-params.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/authors.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/index.html</loc></url>
+<url><loc>https://pbulsink.github.io/moosaic/news/index.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/align_detectors.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/annotate_component.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/build_constraints.html</loc></url>
@@ -52,6 +53,7 @@
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-fit_calibration.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-from_als_output.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-get_moosaic_option.html</loc></url>
+<url><loc>https://pbulsink.github.io/moosaic/reference/dot-half_width_sigma.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-integrate_trapezoid.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-interpolate_unknowns.html</loc></url>
 <url><loc>https://pbulsink.github.io/moosaic/reference/dot-is_background_component.html</loc></url>

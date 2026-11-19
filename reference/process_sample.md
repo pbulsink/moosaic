@@ -21,7 +21,8 @@ process_sample(
   style = NULL,
   reference_peak = NULL,
   include_solvents = FALSE,
-  summarize = TRUE
+  summarize = TRUE,
+  verbose = TRUE
 )
 ```
 
@@ -51,6 +52,10 @@ process_sample(
   Whether to include solvent peaks in the summary, and whether to run
   [`summarize_report()`](https://pbulsink.github.io/moosaic/reference/summarize_report.md)
   at all.
+
+- verbose:
+
+  Whether to print detailed information about the processing steps.
 
 ## Value
 
