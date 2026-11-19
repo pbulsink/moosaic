@@ -15,15 +15,22 @@ A tibble with \code{window_id}, \code{start_rt}, \code{end_rt} (FID time, min),
 removing the alignment delay) and \code{has_shoulder} (logical; any peak in
 the window has an unresolved shoulder). The peak table is attached as
 \code{attr(, "peaks")}. \code{exp} is not modified.
+Nonempty tables also contain \code{core_start_rt}, \code{core_end_rt} and
+\code{core_last}; a shared boundary belongs to the core on its right.
 }
 \description{
 Finds FID peaks (including shoulders) with \code{\link[=detect_peaks]{detect_peaks()}} and merges them
-into padded windows.
+into padded, localized windows with non-overlapping ownership cores.
 }
 \details{
 Padding and merge gap come from the \code{moosaic.window_padding} and
 \code{moosaic.window_merge_gap} options. A warning is issued for windows with
 fewer than \code{moosaic.min_scans_per_window} scans.
+\code{moosaic.window_max_width} (default 0.5 min) limits core width and
+\code{moosaic.window_max_peaks} (default 4) limits detected apexes per core,
+except coincident apexes. Set both to \code{Inf} for legacy merged windows.
+Localized fit intervals are expanded when necessary to include at least
+two available MS scans; ownership cores are unchanged.
 }
 \examples{
 \dontrun{

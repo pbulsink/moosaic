@@ -57,6 +57,50 @@ test_that("identify_components() annotates analytes in one search and skips back
   )
 })
 
+test_that("identify_components() skips components with no searchable spectrum", {
+  ok <- mk_comp("w1_c1", 2, c(`78` = 1))
+  empty <- mk_comp("w1_c2", 8, c(`94` = 0, `95` = NA))
+  res <- structure(
+    list(
+      components = list(ok, empty),
+      windows = tibble::tibble(window_id = 1L)
+    ),
+    class = "moosaic_result"
+  )
+  inner <- mock_search(list(w1_c1 = mk_hits("Benzene", 900, "C6H6", 800)))
+  local_mocked_bindings(.run_mspepsearch = \(q) {
+    expect_equal(vapply(q, \(x) x$name, ""), "w1_c1")
+    inner(q)
+  })
+  withr::local_options(moosaic.min_match_factor = 600)
+  out <- identify_components(res, ri_cal = cal)
+  expect_equal(out$components[[1]]$name, "Benzene")
+  expect_true(is.na(out$components[[2]]$name))
+  expect_equal(nrow(out$identifications), 1L)
+})
+
+test_that("identify_components() searches nothing when no spectrum is searchable", {
+  res <- structure(
+    list(
+      components = list(
+        mk_comp("w1_c1", 2, c(`78` = 0)),
+        mk_comp("w1_c2", 8, c(`94` = NA))
+      ),
+      windows = tibble::tibble(window_id = 1L)
+    ),
+    class = "moosaic_result"
+  )
+  searched <- FALSE
+  local_mocked_bindings(.run_mspepsearch = function(q) {
+    searched <<- TRUE
+    q
+  })
+  out <- identify_components(res, ri_cal = cal)
+  expect_false(searched)
+  expect_true(all(vapply(out$components, \(x) is.na(x$name), logical(1))))
+  expect_equal(nrow(out$identifications), 0L)
+})
+
 test_that("identify_components() reads the calibration from the option when not given", {
   f <- withr::local_tempfile(
     lines = c("1 600 1 1 A", "5 800 1 1 B", "10 1000 1 1 C")

@@ -2,26 +2,22 @@
 #'
 #' @param component A `moosaic_component`.
 #' @param ri Observed retention index, or `NULL`/`NA` to omit it.
-#' @param call Call environment for errors.
 #'
 #' @return List with `name` (the component id), `mz`, `intst` (integer, scaled
 #'   so the maximum is 999, zero-intensity peaks dropped) and, when known,
-#'   `retention_index`.
+#'   `retention_index`; `NULL` when the spectrum has no positive intensity, in
+#'   which case the component cannot be searched.
 #'
 #' @keywords internal
-.component_to_query <- function(
-  component,
-  ri = NULL,
-  call = rlang::caller_env()
-) {
+.component_to_query <- function(component, ri = NULL) {
   s <- component$spectrum
   s <- s[!is.na(s) & s > 0]
   if (length(s) == 0L) {
-    .moosaic_abort(
-      "Component {.val {component$id}} has an empty spectrum.",
-      class = "bad_argument",
-      call = call
+    .moosaic_inform(
+      "Component {.val {component$id}} has no searchable spectrum; skipping the library search.",
+      class = "empty_spectrum"
     )
+    return(NULL)
   }
   q <- list(
     name = component$id,

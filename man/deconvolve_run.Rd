@@ -4,10 +4,12 @@
 \alias{deconvolve_run}
 \title{Deconvolve every FID window of a run}
 \usage{
-deconvolve_run(exp)
+deconvolve_run(exp, verbose = FALSE)
 }
 \arguments{
 \item{exp}{A \code{gcms_fid_exp} object, ideally after \code{\link[=align_detectors]{align_detectors()}}.}
+
+\item{verbose}{Logical; display a progress bar. Defaults to \code{FALSE}.}
 }
 \value{
 A \code{moosaic_result}: a list with \code{components} (all
@@ -16,4 +18,15 @@ A \code{moosaic_result}: a list with \code{components} (all
 }
 \description{
 Deconvolve every FID window of a run
+}
+\details{
+Localized fits overlap for context. Only components whose apex is
+owned by each window's core are returned, avoiding repeated assignment
+of an identical boundary apex. Shifted duplicate estimates can remain.
+}
+\examples{
+\dontrun{
+result <- deconvolve_run(exp)
+}
+
 }

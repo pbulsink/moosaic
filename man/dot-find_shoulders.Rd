@@ -4,22 +4,25 @@
 \alias{.find_shoulders}
 \title{Find shoulders from a second derivative}
 \usage{
-.find_shoulders(d2, apex_idx = integer(), min_depth = 0, tol = 2L)
+.find_shoulders(d2, apex_idx = integer(), min_prominence = 0, tol = 2L)
 }
 \arguments{
 \item{d2}{Numeric vector; second derivative of a peak region.}
 
 \item{apex_idx}{Integer vector; indices of known apexes in \code{d2}.}
 
-\item{min_depth}{Numeric; a minimum of \code{d2} must be at or below
-\code{-min_depth} to count.}
+\item{min_prominence}{Numeric; a local minimum of \code{d2} counts when it dips
+at least this far below the lower of its two flanking maxima (the
+topographic prominence of \code{-d2}). The minimum need not be negative, so a
+minor component riding on the convex flank of a larger peak is found.}
 
 \item{tol}{Integer; minima within \code{tol} points of an apex belong to that
 apex and are not shoulders.}
 }
 \value{
-Integer vector of indices of negative local minima of \code{d2} that are
-not explained by an apex. Each is an unresolved overlapping component.
+Integer vector of indices of local minima of \code{d2} that are
+prominent enough and not explained by an apex. Each is an unresolved
+overlapping component.
 }
 \description{
 Find shoulders from a second derivative

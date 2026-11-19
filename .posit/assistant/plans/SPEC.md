@@ -189,6 +189,8 @@ All defaults in **one file**: `R/aaa-options.R` (`.moosaic_default_options()`); 
 | `moosaic.peak_min_height_snr` | `5` | FID detection |
 | `moosaic.window_padding` | `0.02` (min) | windows |
 | `moosaic.window_merge_gap` | `0.01` (min) | windows |
+| `moosaic.window_max_width` | `0.5` (min; ownership core, `Inf` disables) | windows |
+| `moosaic.window_max_peaks` | `4L` (apexes per ownership core; `Inf` disables) | windows |
 | `moosaic.min_scans_per_window` | `8L` | windows |
 | `moosaic.rank_methods` | `c("fid","svd","bic","pfr","pa")` | rank |
 | `moosaic.rank_max` | `6L` | rank |
@@ -320,7 +322,7 @@ Detection operates on a processed **copy**; `exp$fid$intensity` stays raw for Po
 | `find_shoulders.R` | `.find_shoulders(d2, apex_idx)` | no |
 | `find_peak_bounds.R` | `.find_peak_bounds(x, apex_idx)` | no |
 | `detect_fid_peaks.R` | `detect_fid_peaks(fid, min_snr = NULL)` | yes — tibble(peak_id, apex_rt, start_rt, end_rt, height, shoulder) |
-| `merge_overlapping_peaks.R` | `.merge_overlapping_peaks(peaks, padding, gap)` | no |
+| `merge_overlapping_peaks.R` | `.merge_overlapping_peaks(peaks, padding, gap, max_width, max_peaks, call)` | no |
 | `detect_fid_windows.R` | `detect_fid_windows(exp)` | yes |
 
 **Unit tests:**
@@ -334,6 +336,16 @@ Detection operates on a processed **copy**; `exp$fid$intensity` stays raw for Po
 - no peaks → zero-row tibble with correct columns
 
 **Stage tests:** 3 separated synthetic peaks → 3 peaks, apex within 1 point; fused doublet flagged shoulder; raw FID identical before/after `detect_fid_windows()`.
+
+Localized window contract: merged regions are partitioned between ordered apexes
+to target at most `window_max_peaks` detections per core (coincident apexes stay
+together), then subdivided to enforce `window_max_width`. Fit intervals extend
+by `window_padding` inside the merged region; narrow intervals expand to two
+available aligned MS scans. Nonempty localized tables add `core_start_rt`,
+`core_end_rt`, and `core_last`. Cores are left-closed/right-open, except the last
+core of each merged region owns its right endpoint. Peak IDs and `n_peaks` refer
+to owned apexes, while `n_scans` refers to the contextual fit interval. Both
+limits set to `Inf` restore legacy merging and table columns.
 
 **Challenge tests:** on excerpt — count of peaks vs analyst expectation (snapshot of peak table for review); late-run drift; solvent tail; windows with < `min_scans_per_window` MS scans reported.
 
@@ -466,9 +478,17 @@ C0 columns = measured FID sub-profiles (zero outside segment, ≥ 0), not Gaussi
 | `integrate_trapezoid.R` | `.integrate_trapezoid(x, y)` | no |
 | `apportion_fid_area.R` | `.apportion_fid_area(fid_raw_window, C)` | no — shares of fitted signal per scan applied to **raw** FID |
 | `components_to_tibble.R` | `components_to_tibble(components)` | yes |
-| `deconvolve_run.R` | `deconvolve_run(exp)` | yes → `moosaic_result` |
+| `deconvolve_run.R` | `deconvolve_run(exp, verbose = FALSE)` | yes → `moosaic_result` |
 
 Component fields: `id, window_id, rt, chromatogram, spectrum, area_fid, area_ms, fid_ms_ratio, residual, explained_variance, is_background`.
+
+Localized fits retain only analytes whose fitted apex belongs to the ownership
+core, plus the optional background. FID apportionment uses retained analytes
+within the core, interpolating shared endpoints so overlapping fit context is
+not counted twice. Full contextual chromatograms and MS areas are retained.
+Core ownership prevents duplicate assignment of an identical boundary apex; it
+is not spectral matching across fits and does not guarantee removal of shifted
+duplicate estimates. Cores with no retained analyte contribute no FID area.
 
 **Unit tests:** trapezoid on known function; apportioned areas sum to raw area (1e-8); background excluded from apportioning; tibble columns.
 
@@ -617,6 +637,7 @@ Each step: unit tests → implement → stage tests → challenge tests → cove
 | Alignment engine | Default changed to `"xcorr"`; GCalignR (~700 s per run in profiling) is opt-in only and no longer run as a cross-check. Its peak recombination is reserved for post-deconvolution quantification needs (1.6). |
 | Pseudo F-ratio rank vote | `.rank_pfr()` adapts Giebelhaus et al. 2022 (doi:10.1016/j.chroma.2022.463499): F CDF of consecutive `s_k^2/s_{k+1}^2` with df `(w-1, w-2)`, as in the paper (cheap; no permutation null). Deviations, chosen on simulations: no autoscaling (it masks minor components); rank = last significant ratio, not leading run; only ratios up to `max_rank + 1` tested (tail ratios of noise are spuriously large). Cutoff 0.95, not the paper's 0.7 (0.7 over-calls). In the default `rank_methods` (always runs as a cheap vote; never gated like PA). |
 | Shoulder windows force PA | `detect_fid_windows()` adds a `shoulder` column (any peak flagged by `.has_shoulder()`); `process_window()` passes it as `estimate_rank(force_pa = )` so a shoulder is not lost when the FID-blind cheap votes agree on too low a rank. |
+| Localized deconvolution | Bound ownership cores by 0.5 min and four FID apexes by default, with padded fit context and deterministic half-open apex ownership. This removes the whole-region rank ceiling without raising the per-fit rank cap. Validate counts and spectra on crowded synthetic runs; real-data component recovery remains a separate challenge. |
 
 ## 20. Later extensions
 

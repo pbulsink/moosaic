@@ -4,7 +4,14 @@
 \alias{.merge_overlapping_peaks}
 \title{Merge peaks into deconvolution windows}
 \usage{
-.merge_overlapping_peaks(peaks, padding, gap)
+.merge_overlapping_peaks(
+  peaks,
+  padding,
+  gap,
+  max_width = Inf,
+  max_peaks = Inf,
+  call = rlang::caller_env()
+)
 }
 \arguments{
 \item{peaks}{Tibble from \code{\link[=detect_peaks]{detect_peaks()}}.}
@@ -13,12 +20,26 @@
 
 \item{gap}{Numeric; padded intervals separated by no more than this many
 minutes are merged.}
+
+\item{max_width}{Positive maximum core width in minutes; \code{Inf} disables it.}
+
+\item{max_peaks}{Positive whole-number target for apexes per core; coincident
+apexes stay together. \code{Inf} disables this limit.}
+
+\item{call}{Call environment for errors.}
 }
 \value{
 A tibble with \code{window_id}, \code{start_rt}, \code{end_rt}, \code{n_peaks} and
 \code{peak_ids} (list column). Zero rows when \code{peaks} has none.
+With localization enabled, also includes \code{core_start_rt}, \code{core_end_rt}
+and \code{core_last} (whether the right endpoint is owned).
 }
 \description{
 Merge peaks into deconvolution windows
+}
+\details{
+Merged regions are partitioned between apexes, then by width.
+Cores do not overlap; fitting intervals extend by \code{padding} on either side
+inside the original region. Peak membership uses apex ownership, not tails.
 }
 \keyword{internal}

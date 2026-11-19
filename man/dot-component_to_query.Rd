@@ -4,19 +4,18 @@
 \alias{.component_to_query}
 \title{Build a search query from a component}
 \usage{
-.component_to_query(component, ri = NULL, call = rlang::caller_env())
+.component_to_query(component, ri = NULL)
 }
 \arguments{
 \item{component}{A \code{moosaic_component}.}
 
 \item{ri}{Observed retention index, or \code{NULL}/\code{NA} to omit it.}
-
-\item{call}{Call environment for errors.}
 }
 \value{
 List with \code{name} (the component id), \code{mz}, \code{intst} (integer, scaled
 so the maximum is 999, zero-intensity peaks dropped) and, when known,
-\code{retention_index}.
+\code{retention_index}; \code{NULL} when the spectrum has no positive intensity, in
+which case the component cannot be searched.
 }
 \description{
 Build a search query from a component

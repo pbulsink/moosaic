@@ -25,13 +25,19 @@ window's scans.}
 \item{call}{Call environment for errors.}
 }
 \value{
-List of \code{moosaic_component} objects, one per fitted column. \code{rt} is
-the time of the maximum of the fitted profile; \code{area_fid} is the apportioned
+List of \code{moosaic_component} objects, one per retained column. \code{rt} is
+the time of the profile maximum; \code{area_fid} is the apportioned
 raw FID area (\code{NA} for background); \code{area_ms} is the area of the fitted
 profile scaled by the summed spectrum; \code{fid_ms_ratio} is their quotient;
 \code{residual} is the window's lack of fit (\%).
 }
 \description{
 Turn a window fit into components
+}
+\details{
+For localized windows, only apexes in the ownership core are kept
+(left closed, right open unless \code{core_last}). FID areas are apportioned
+among retained analytes within the core, interpolating its endpoints to
+avoid gaps or double integration. MS areas and profiles use the full fit.
 }
 \keyword{internal}

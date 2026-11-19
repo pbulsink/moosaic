@@ -20,3 +20,14 @@ test_that("write_msp() accepts a moosaic_result and skips background components"
   write_msp(res, f)
   expect_equal(sum(grepl("^NAME:", readLines(f))), 1L)
 })
+
+test_that("write_msp() skips components with no searchable spectrum", {
+  ok <- mk_comp("w1_c1", 5, c(`41` = 1, `42` = 2))
+  empty <- mk_comp("w1_c2", 6, c(`50` = 0, `51` = NA))
+  f <- withr::local_tempfile(fileext = ".msp")
+  write_msp(list(ok, empty), f)
+  lines <- readLines(f)
+  expect_equal(sum(grepl("^NAME:", lines)), 1L)
+  expect_true(any(grepl("w1_c1", lines)))
+  expect_false(any(grepl("w1_c2", lines)))
+})

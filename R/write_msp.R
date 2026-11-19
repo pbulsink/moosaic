@@ -13,10 +13,12 @@ write_msp <- function(components, path) {
   if (inherits(components, "moosaic_result")) {
     components <- components$components
   }
-  call <- rlang::current_env()
   components <- Filter(\(x) !isTRUE(x$is_background), components)
   lines <- unlist(lapply(components, \(cmp) {
-    q <- .component_to_query(cmp, cmp$ri, call = call)
+    q <- .component_to_query(cmp, cmp$ri)
+    if (is.null(q)) {
+      return(character())
+    }
     c(
       paste0("NAME: ", q$name),
       paste0("RETENTION_TIME: ", format(cmp$rt, digits = 6)),

@@ -50,3 +50,57 @@ test_that(".build_components() aborts when the fit and FID window disagree", {
     class = "moosaic-error-bad_argument"
   )
 })
+
+test_that(".build_components() assigns boundary apexes once and integrates only the owned core", {
+  fit <- fake_fit()
+  fid <- fid_raw()
+  boundary <- fid$rt[26]
+  left <- c(
+    fake_window,
+    list(core_start_rt = min(fid$rt), core_end_rt = boundary, core_last = FALSE)
+  )
+  right <- c(
+    fake_window,
+    list(core_start_rt = boundary, core_end_rt = max(fid$rt), core_last = TRUE)
+  )
+  a <- .build_components(fit, fid, left)
+  b <- .build_components(fit, fid, right)
+  expect_length(a, 1L)
+  expect_length(b, 1L)
+  expect_equal(b[[1]]$rt, boundary)
+  expect_equal(
+    sum(vapply(c(a, b), \(x) x$area_fid, numeric(1))),
+    .integrate_trapezoid(fid$rt, fid$intensity),
+    tolerance = 1e-8
+  )
+})
+
+test_that(".build_components() interpolates shared boundaries and retains background", {
+  fit <- fake_fit(bg = TRUE)
+  fid <- fid_raw()
+  boundary <- mean(fid$rt[20:21])
+  left <- c(
+    fake_window,
+    list(core_start_rt = min(fid$rt), core_end_rt = boundary, core_last = FALSE)
+  )
+  right <- c(
+    fake_window,
+    list(core_start_rt = boundary, core_end_rt = max(fid$rt), core_last = TRUE)
+  )
+  a <- .build_components(fit, fid, left, background = TRUE)
+  b <- .build_components(fit, fid, right, background = TRUE)
+  expect_length(a, 2L)
+  expect_length(b, 2L)
+  expect_equal(
+    a[[1]]$area_fid + b[[1]]$area_fid,
+    .integrate_trapezoid(fid$rt, fid$intensity),
+    tolerance = 1e-8
+  )
+  expect_true(a[[2]]$is_background)
+  expect_true(is.na(b[[2]]$area_fid))
+  empty <- c(
+    fake_window,
+    list(core_start_rt = 0.15, core_end_rt = 0.17, core_last = FALSE)
+  )
+  expect_length(.build_components(fake_fit(), fid, empty), 0L)
+})

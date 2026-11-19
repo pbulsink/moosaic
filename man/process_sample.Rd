@@ -12,7 +12,8 @@ process_sample(
   style = NULL,
   reference_peak = NULL,
   include_solvents = FALSE,
-  summarize = TRUE
+  summarize = TRUE,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ files.}
 
 \item{include_solvents, summarize}{Whether to include solvent peaks in the
 summary, and whether to run \code{\link[=summarize_report]{summarize_report()}} at all.}
+
+\item{verbose}{Whether to print detailed information about the processing steps.}
 }
 \value{
 A \code{moosaic_result} with \code{components}, \code{windows}, \code{identifications},

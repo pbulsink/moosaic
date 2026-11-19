@@ -26,9 +26,12 @@ annotate_component <- function(component, ri_cal = NULL) {
   } else {
     .compute_ri(component$rt, cal, call = call)
   }
-  q <- .component_to_query(component, ri, call = call)
-  hits <- .parse_search_results(.run_mspepsearch(list(q)))
-  ids <- .score_hits(hits, stats::setNames(ri, component$id))
+  q <- .component_to_query(component, ri)
+  hits <- if (is.null(q)) list() else .run_mspepsearch(list(q))
+  ids <- .score_hits(
+    .parse_search_results(hits),
+    stats::setNames(ri, component$id)
+  )
   .apply_annotation(component, ri, ids)
 }
 

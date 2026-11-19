@@ -15,10 +15,20 @@ test_that(".component_to_query() omits the RI when it is NA or NULL", {
   expect_false("retention_index" %in% names(.component_to_query(cmp, NULL)))
 })
 
-test_that(".component_to_query() aborts for an empty spectrum", {
+test_that(".component_to_query() returns NULL for an empty spectrum", {
   cmp <- mk_comp("w1_c1", 5, c(`40` = 0, `41` = 0))
-  expect_error(
+  expect_null(.component_to_query(cmp, NA))
+})
+
+test_that(".component_to_query() returns NULL when every peak is zero or NA", {
+  cmp <- mk_comp("w1_c1", 5, c(`40` = 0, `41` = NA, `42` = -1))
+  expect_null(.component_to_query(cmp, 800))
+})
+
+test_that(".component_to_query() informs when it skips an unsearchable spectrum", {
+  cmp <- mk_comp("w1_c1", 5, c(`40` = 0))
+  expect_message(
     .component_to_query(cmp, NA),
-    class = "moosaic-error-bad_argument"
+    class = "moosaic-message-empty_spectrum"
   )
 })

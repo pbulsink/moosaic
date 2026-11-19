@@ -40,3 +40,64 @@ test_that(".merge_overlapping_peaks() returns a typed zero-row tibble for no pea
   expect_equal(nrow(w), 0L)
   expect_named(w, c("window_id", "start_rt", "end_rt", "n_peaks", "peak_ids"))
 })
+
+test_that(".merge_overlapping_peaks() localizes a crowded chain without losing peaks", {
+  peaks <- mk(seq(1, 2.9, by = 0.1), seq(1.12, 3.02, by = 0.1))
+  w <- .merge_overlapping_peaks(
+    peaks[20:1, ],
+    0.02,
+    0.01,
+    max_width = 0.5,
+    max_peaks = 4L
+  )
+  expect_gt(nrow(w), 1L)
+  expect_lte(max(w$core_end_rt - w$core_start_rt), 0.5 + 1e-10)
+  expect_lte(max(w$n_peaks), 4L)
+  expect_equal(unlist(w$peak_ids, use.names = FALSE), 1:20)
+  expect_equal(w$core_start_rt[-1], head(w$core_end_rt, -1))
+  expect_equal(w$start_rt[1], 0.98)
+  expect_equal(tail(w$end_rt, 1), 3.04)
+  expect_true(all(w$start_rt[-1] < head(w$end_rt, -1)))
+})
+
+test_that(".merge_overlapping_peaks() bounds broad peaks and keeps coincident apexes together", {
+  w <- .merge_overlapping_peaks(
+    mk(c(1, 1), c(3, 3)),
+    0,
+    0,
+    max_width = 0.5,
+    max_peaks = 1L
+  )
+  expect_equal(range(c(w$core_start_rt, w$core_end_rt)), c(1, 3))
+  expect_lte(max(w$core_end_rt - w$core_start_rt), 0.5)
+  expect_equal(sort(unlist(w$peak_ids)), 1:2)
+})
+
+test_that(".merge_overlapping_peaks() validates localization limits", {
+  for (value in list(0, -1, NA_real_, NaN, c(1, 2), "wide")) {
+    expect_error(
+      .merge_overlapping_peaks(mk(1, 2), 0, 0, max_width = value),
+      class = "moosaic-error-bad_argument"
+    )
+    expect_error(
+      .merge_overlapping_peaks(mk(1, 2), 0, 0, max_peaks = value),
+      class = "moosaic-error-bad_argument"
+    )
+  }
+  expect_error(
+    .merge_overlapping_peaks(mk(1, 2), 0, 0, max_peaks = 1.5),
+    class = "moosaic-error-bad_argument"
+  )
+})
+
+test_that(".merge_overlapping_peaks() can localize by peak count alone", {
+  w <- .merge_overlapping_peaks(
+    mk(c(1, 1.1, 1.2), c(1.2, 1.3, 1.4)),
+    0,
+    0,
+    max_width = Inf,
+    max_peaks = 2L
+  )
+  expect_equal(w$n_peaks, c(2L, 1L))
+  expect_equal(w$core_end_rt[1], 1.25)
+})

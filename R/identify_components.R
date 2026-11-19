@@ -39,10 +39,11 @@ identify_components <- function(result, ri_cal = NULL) {
   ids_all <- vapply(comps[analyte], \(x) x$id, "")
   names(ris) <- ids_all
   queries <- lapply(seq_along(analyte), \(i) {
-    .component_to_query(comps[[analyte[i]]], ris[[i]], call = call)
+    .component_to_query(comps[[analyte[i]]], ris[[i]])
   })
-  hits <- if (length(queries) > 0L) {
-    .parse_search_results(.run_mspepsearch(queries))
+  searchable <- which(!vapply(queries, is.null, logical(1)))
+  hits <- if (length(searchable) > 0L) {
+    .parse_search_results(.run_mspepsearch(queries[searchable]))
   } else {
     .parse_search_results(list())
   }

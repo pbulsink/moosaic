@@ -33,6 +33,8 @@
     # Windows
     moosaic.window_padding = 0.02,
     moosaic.window_merge_gap = 0.01,
+    moosaic.window_max_width = 0.5,
+    moosaic.window_max_peaks = 4L,
     moosaic.min_scans_per_window = 8L,
     # Rank estimation
     moosaic.rank_methods = c("fid", "svd", "bic", "pfr", "pa"),

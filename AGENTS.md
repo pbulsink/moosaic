@@ -10,7 +10,7 @@ Automated data extraction, deconvolution, and spectral searching for GC-FID/MS d
 
 Automated data extraction, deconvolution, and spectral searching for GC-FID/MS data. The pipeline is: `read_experiment()` → `align_detectors()` → FID peak/window detection → per-window rank estimation → FID-derived constraints → MCR-ALS fit (`fit_window()`) → components → library search (mspepsearchr) → RI + element-penalty scoring → Polyarc quantification (`quantify()`) → reports (`summarize_report()`, `write_excel_report()`, `write_pdf_report()`). The one-call entry point is `process_sample()`.
 
-`.posit/SPEC.md` is the authoritative design document (draft v2): conventions, per-stage file/function tables, testing strategy, options reference, and a decisions log. Read it before implementing or modifying any stage.
+`.posit/plans/SPEC.md` is the authoritative design document (draft v2): conventions, per-stage file/function tables, testing strategy, options reference, and a decisions log. Read it before implementing or modifying any stage.
 
 ## Project Structure
 
@@ -152,7 +152,7 @@ Tests mirror source files 1:1 per project convention: `R/{name}.R` → `tests/te
 - `_snaps/` - testthat snapshot files
 
 ### Other
-- `.posit/SPEC.md` - package specification (authoritative design doc; draft v2, decisions log in section 19)
+- `.posit/plans/SPEC.md` - package specification (authoritative design doc; draft v2, decisions log in section 19)
 - `inst/report/report.qmd` - Quarto template rendered by `write_pdf_report()`
 - `dev/` - development notes and challenge register (Rbuildignored; currently empty: create `dev/challenges.md` when logging the first challenge)
 - `vignettes/moosaic-params.Rmd` - parameter/options vignette
@@ -160,7 +160,7 @@ Tests mirror source files 1:1 per project convention: `R/{name}.R` → `tests/te
 
 ## Architecture Summary
 
-One function per file: exported functions are the public API (32 exports plus `.moosaic_default_options()` and the S3 print method); everything else is a dot-prefixed internal helper co-located with its module. Internal data flow follows the pipeline stages in `.posit/SPEC.md` section 17; raw FID intensities are never modified (detection works on processed copies), and MS spectra are normalised to max = 1 internally, scaled to max 999 for search/MSP output.
+One function per file: exported functions are the public API (32 exports plus `.moosaic_default_options()` and the S3 print method); everything else is a dot-prefixed internal helper co-located with its module. Internal data flow follows the pipeline stages in `.posit/plans/SPEC.md` section 17; raw FID intensities are never modified (detection works on processed copies), and MS spectra are normalised to max = 1 internally, scaled to max 999 for search/MSP output.
 
 | File | Role | Key Functions |
 |------|------|---------------|
@@ -296,7 +296,7 @@ One function per file: exported functions are the public API (32 exports plus `.
 This section describes the typical development and testing workflow for this package. Agents should follow these steps when making changes:
 
 ### 1. Understand the Code Path
-- Read `.posit/SPEC.md` first: it defines each stage's file/function table, data structures, options, and the decisions log (section 19).
+- Read `.posit/plans/SPEC.md` first: it defines each stage's file/function table, data structures, options, and the decisions log (section 19).
 - Read roxygen documentation in `R/*.R` to understand function purposes and signatures; every function (including internal) has full roxygen.
 - Trace data flow through the pipeline stages (`process_sample()` is the reference order); identify which files are affected by the proposed change.
 
@@ -317,7 +317,7 @@ This section describes the typical development and testing workflow for this pac
 
 ### 4. Update Documentation
 - Regenerate man pages and NAMESPACE: `roxygen2::roxygenise()` (or `devtools::document()`). Never edit `NAMESPACE` or `man/*.Rd` by hand — they are generated from roxygen comments.
-- Update `.posit/SPEC.md` if the change alters a stage's contract, options table, or data structures; record decisions in its log (section 19).
+- Update `.posit/plans/SPEC.md` if the change alters a stage's contract, options table, or data structures; record decisions in its log (section 19).
 
 ### 5. Verify Build
 - Full package check: `devtools::check()` (or `R CMD CHECK`) — no errors, warnings, or notes.

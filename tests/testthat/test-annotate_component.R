@@ -60,6 +60,19 @@ test_that("annotate_component() sets name to NA when nothing passes", {
   expect_equal(nrow(out$hits), 0L)
 })
 
+test_that("annotate_component() skips the search for an unsearchable spectrum", {
+  cmp <- mk_comp("w1_c1", 5, c(`78` = 0, `79` = NA))
+  searched <- FALSE
+  local_mocked_bindings(.run_mspepsearch = function(q) {
+    searched <<- TRUE
+    q
+  })
+  out <- annotate_component(cmp, ri_cal = cal)
+  expect_false(searched)
+  expect_true(is.na(out$name))
+  expect_equal(nrow(out$hits), 0L)
+})
+
 test_that("annotate_component() rejects a non-component", {
   expect_error(annotate_component(1), class = "moosaic-error-bad_argument")
 })

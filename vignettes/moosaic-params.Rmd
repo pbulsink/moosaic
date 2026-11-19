@@ -218,6 +218,8 @@ retention-time domains that MCR-ALS fits.
 |---|---|---|
 | `moosaic.window_padding` | `0.02` | Minutes added to each side of every peak (min) |
 | `moosaic.window_merge_gap` | `0.01` | Separation at or below which padded peaks merge into one window (min) |
+| `moosaic.window_max_width` | `0.5` | Maximum ownership-core width (min); `Inf` disables |
+| `moosaic.window_max_peaks` | `4L` | Target maximum FID apexes per ownership core; `Inf` disables |
 | `moosaic.min_scans_per_window` | `8L` | Minimum MS scans per window before a warning is issued |
 
 - **`moosaic.window_padding`** — minutes added to each side of every detected
@@ -229,6 +231,16 @@ retention-time domains that MCR-ALS fits.
 - **`moosaic.window_merge_gap`** — two padded peaks whose intervals are
   separated by at most this many minutes are merged into a single deconvolution
   window; wider separations start a new one.
+- **Localized fitting** — merged regions are divided between apexes into cores
+  containing at most `moosaic.window_max_peaks` detections, then subdivided to
+  meet `moosaic.window_max_width`. Coincident apexes remain together. Each fit
+  includes padding around its core, but only analytes whose fitted apex belongs
+  to that core are returned. Shared boundaries belong to the core on the right;
+  raw FID area is integrated only within each core, preventing overlapping fit
+  context from being counted twice. Very narrow fit intervals expand to include
+  two available MS scans. Set both limits to `Inf` to restore legacy merging.
+  Localization removes a single rank cap over a long crowded region; it does
+  not guarantee a particular peak count or eliminate shifted duplicate fits.
 - **`moosaic.min_scans_per_window`** — windows containing fewer MS scans than
   this emit a warning of class `few_scans` but are still processed. The limit
   exists because MCR-ALS needs enough rows to support the estimated rank (plus
