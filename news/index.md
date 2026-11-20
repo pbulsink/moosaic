@@ -11,3 +11,6 @@
   min) and `window_max_peaks` (4) options. Both accept `Inf` to restore
   legacy merging. Fit intervals retain padding and at least two
   available MS scans.
+- [`identify_components()`](https://pbulsink.github.io/moosaic/reference/identify_components.md)
+  reports the searchable component count and displays a progress bar
+  when `verbose = TRUE`, preserving the batched library search.

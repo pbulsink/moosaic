@@ -41,6 +41,8 @@
 <code><a href="../reference/deconvolve_run.html">deconvolve_run()</a></code> supports optional progress reporting and retains localized components by non-overlapping apex ownership, with core-only FID integration to avoid counting overlapping context twice.</li>
 <li>
 <code><a href="../reference/detect_fid_windows.html">detect_fid_windows()</a></code> localizes crowded merged regions using new <code>window_max_width</code> (0.5 min) and <code>window_max_peaks</code> (4) options. Both accept <code>Inf</code> to restore legacy merging. Fit intervals retain padding and at least two available MS scans.</li>
+<li>
+<code><a href="../reference/identify_components.html">identify_components()</a></code> reports the searchable component count and displays a progress bar when <code>verbose = TRUE</code>, preserving the batched library search.</li>
 </ul></div>
   </main></div>
 

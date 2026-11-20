@@ -48,7 +48,7 @@ for all of them, and scores the candidates as
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">identify_components</span><span class="op">(</span><span class="va">result</span>, ri_cal <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">identify_components</span><span class="op">(</span><span class="va">result</span>, ri_cal <span class="op">=</span> <span class="cn">NULL</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -61,6 +61,11 @@ for all of them, and scores the candidates as
 
 <dt id="arg-ri-cal">ri_cal<a class="anchor" aria-label="anchor" href="#arg-ri-cal"></a></dt>
 <dd><p>RI calibration; see <code><a href="annotate_component.html">annotate_component()</a></code>.</p></dd>
+
+
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
+<dd><p>Logical; display identification messages and a progress bar.
+Defaults to <code>FALSE</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -76,9 +81,20 @@ and <code>moosaic.ri_penalty_per_unit</code> per unit beyond; it is zero (and fl
 in <code>ri_missing</code>) when either RI is missing. The element penalty comes from
 <code>moosaic.element_penalties</code> (per atom); every atom of an element that is
 neither listed there nor in <code>moosaic.allowed_elements</code> is also penalised by
-<code>moosaic.disallowed_element_penalty</code> per atom.</p>
+<code>moosaic.disallowed_element_penalty</code> per atom.
+With <code>verbose = TRUE</code>, progress advances after the batched library search
+and as annotations are applied; the search itself does not report
+per-component progress.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">identify_components</span><span class="op">(</span><span class="va">result</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

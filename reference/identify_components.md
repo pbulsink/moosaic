@@ -7,7 +7,7 @@ for all of them, and scores the candidates as
 ## Usage
 
 ``` r
-identify_components(result, ri_cal = NULL)
+identify_components(result, ri_cal = NULL, verbose = FALSE)
 ```
 
 ## Arguments
@@ -22,6 +22,11 @@ identify_components(result, ri_cal = NULL)
   RI calibration; see
   [`annotate_component()`](https://pbulsink.github.io/moosaic/reference/annotate_component.md).
 
+- verbose:
+
+  Logical; display identification messages and a progress bar. Defaults
+  to `FALSE`.
+
 ## Value
 
 `result` with annotated components (`ri`, `hits`, `name`; background
@@ -35,4 +40,15 @@ The RI penalty is zero within `moosaic.ri_grace` of the library RI and
 in `ri_missing`) when either RI is missing. The element penalty comes
 from `moosaic.element_penalties` (per atom); every atom of an element
 that is neither listed there nor in `moosaic.allowed_elements` is also
-penalised by `moosaic.disallowed_element_penalty` per atom.
+penalised by `moosaic.disallowed_element_penalty` per atom. With
+`verbose = TRUE`, progress advances after the batched library search and
+as annotations are applied; the search itself does not report
+per-component progress.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+result <- identify_components(result, verbose = TRUE)
+} # }
+```
