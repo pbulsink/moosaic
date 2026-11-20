@@ -6,6 +6,8 @@
 #'
 #' @param result A `moosaic_result` (see [deconvolve_run()]).
 #' @param ri_cal RI calibration; see [annotate_component()].
+#' @param verbose Logical; display identification messages and a progress bar.
+#'   Defaults to `FALSE`.
 #'
 #' @return `result` with annotated components (`ri`, `hits`, `name`; background
 #'   components are left unannotated) and an `identifications` tibble of all
@@ -17,13 +19,28 @@
 #'   `moosaic.element_penalties` (per atom); every atom of an element that is
 #'   neither listed there nor in `moosaic.allowed_elements` is also penalised by
 #'   `moosaic.disallowed_element_penalty` per atom.
+#'   With `verbose = TRUE`, progress advances after the batched library search
+#'   and as annotations are applied; the search itself does not report
+#'   per-component progress.
+#'
+#' @examples
+#' \dontrun{
+#' result <- identify_components(result, verbose = TRUE)
+#' }
 #'
 #' @export
-identify_components <- function(result, ri_cal = NULL) {
+identify_components <- function(result, ri_cal = NULL, verbose = FALSE) {
   call <- rlang::current_env()
   if (!inherits(result, "moosaic_result")) {
     .moosaic_abort(
       "{.arg result} must be a {.cls moosaic_result}.",
+      class = "bad_argument",
+      call = call
+    )
+  }
+  if (!rlang::is_bool(verbose)) {
+    .moosaic_abort(
+      "{.fn identify_components}: {.arg verbose} must be TRUE or FALSE.",
       class = "bad_argument",
       call = call
     )
@@ -42,14 +59,30 @@ identify_components <- function(result, ri_cal = NULL) {
     .component_to_query(comps[[analyte[i]]], ris[[i]])
   })
   searchable <- which(!vapply(queries, is.null, logical(1)))
+  verbose <- verbose && length(searchable) > 0L
+  if (verbose) {
+    .moosaic_inform("Searching library for {length(searchable)} components:")
+    pb <- utils::txtProgressBar(
+      min = 0,
+      max = length(analyte) + 1L,
+      style = 3
+    )
+    on.exit(close(pb), add = TRUE)
+  }
   hits <- if (length(searchable) > 0L) {
     .parse_search_results(.run_mspepsearch(queries[searchable]))
   } else {
     .parse_search_results(list())
   }
+  if (verbose) {
+    utils::setTxtProgressBar(pb, 1L)
+  }
   ids <- .score_hits(hits, ris)
   for (i in seq_along(analyte)) {
     comps[[analyte[i]]] <- .apply_annotation(comps[[analyte[i]]], ris[[i]], ids)
+    if (verbose) {
+      utils::setTxtProgressBar(pb, i + 1L)
+    }
   }
   result$components <- comps
   result$identifications <- ids

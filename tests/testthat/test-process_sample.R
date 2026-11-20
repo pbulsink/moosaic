@@ -21,13 +21,13 @@ mock_pipeline <- function(env = parent.frame()) {
     read_experiment = mark("read", \(ms_file, fid_file) exp),
     align_detectors = mark("align", \(exp, ...) exp),
     .check_fid_baseline = mark("baseline", \(fid, ...) invisible(NULL)),
-    deconvolve_run = mark("deconvolve", \(exp) {
+    deconvolve_run = mark("deconvolve", \(exp, verbose) {
       structure(
         list(components = q$components, alignment = exp$alignment),
         class = "moosaic_result"
       )
     }),
-    identify_components = mark("identify", \(result, ri_cal = NULL) {
+    identify_components = mark("identify", \(result, ri_cal = NULL, verbose) {
       result$identifications <- tibble::tibble()
       result
     }),
@@ -63,6 +63,35 @@ test_that("process_sample() validates info before reading files", {
   expect_error(
     process_sample("missing.ms", "missing.ch", sample_info("S1")),
     class = "moosaic-error-file_not_found"
+  )
+})
+
+test_that("process_sample() rejects invalid verbose values before reading files", {
+  calls <- mock_pipeline()
+  for (verbose in list(NA, NULL, 1, "TRUE", c(TRUE, FALSE))) {
+    expect_error(
+      process_sample(
+        "a.ms",
+        "a.ch",
+        sample_info("S1"),
+        verbose = verbose
+      ),
+      class = "moosaic-error-bad_argument"
+    )
+  }
+  expect_length(calls(), 0L)
+})
+
+test_that("process_sample() is quiet when verbose is FALSE", {
+  mock_pipeline()
+  expect_silent(
+    process_sample(
+      "a.ms",
+      "a.ch",
+      sample_info("S1"),
+      summarize = FALSE,
+      verbose = FALSE
+    )
   )
 })
 

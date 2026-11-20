@@ -41,13 +41,20 @@ process_sample <- function(
       class = "bad_argument"
     )
   }
+  if (!rlang::is_bool(verbose)) {
+    .moosaic_abort(
+      "{.fn process_sample}: {.arg verbose} must be TRUE or FALSE.",
+      class = "bad_argument",
+      call = rlang::current_env()
+    )
+  }
   exp <- read_experiment(ms_file, fid_file)
   if (verbose) {
     .moosaic_inform(c(
       "Read experiment from {.file {ms_file}} and {.file {fid_file}}.",
       "MS chromatogram: {round(min(exp$ms$rt), 1)} to {round(max(exp$ms$rt), 1)} min @ {round(1/(mean(diff(exp$ms$rt))*60), 1)} Hz.",
       "MS scan range of {min(exp$ms$data[,2])} to {max(exp$ms$data[,2])}.",
-      "FID chromatogram: {round(min(exp$fid$rt), 1)} to {round(max(exp$fid$rt), 1)} min @ {round(1/(mean(diff(exp$fid$rt))*60), 1)} Hz.",
+      "FID chromatogram: {round(min(exp$fid$rt), 1)} to {round(max(exp$fid$rt), 1)} min @ {round(1/(mean(diff(exp$fid$rt))*60), 1)} Hz."
     ))
   }
   exp <- align_detectors(exp)
@@ -67,11 +74,11 @@ process_sample <- function(
   result <- deconvolve_run(exp, verbose = verbose) # Todo: turn on deconvolution progress bar if verbose
   if (verbose) {
     .moosaic_inform(c(
-      "Found {length(result$components)} components after deconvolution.",
+      "Found {length(result$components)} components after deconvolution."
     ))
   }
   result$alignment <- exp$alignment
-  result <- identify_components(result, ri_cal = ri_cal)
+  result <- identify_components(result, ri_cal = ri_cal, verbose = verbose)
   if (verbose) {
     .moosaic_inform(c(
       "Identified components ..."

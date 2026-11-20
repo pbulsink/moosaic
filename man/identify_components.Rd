@@ -4,12 +4,15 @@
 \alias{identify_components}
 \title{Identify the components of a deconvolved run}
 \usage{
-identify_components(result, ri_cal = NULL)
+identify_components(result, ri_cal = NULL, verbose = FALSE)
 }
 \arguments{
 \item{result}{A \code{moosaic_result} (see \code{\link[=deconvolve_run]{deconvolve_run()}}).}
 
 \item{ri_cal}{RI calibration; see \code{\link[=annotate_component]{annotate_component()}}.}
+
+\item{verbose}{Logical; display identification messages and a progress bar.
+Defaults to \code{FALSE}.}
 }
 \value{
 \code{result} with annotated components (\code{ri}, \code{hits}, \code{name}; background
@@ -28,4 +31,13 @@ in \code{ri_missing}) when either RI is missing. The element penalty comes from
 \code{moosaic.element_penalties} (per atom); every atom of an element that is
 neither listed there nor in \code{moosaic.allowed_elements} is also penalised by
 \code{moosaic.disallowed_element_penalty} per atom.
+With \code{verbose = TRUE}, progress advances after the batched library search
+and as annotations are applied; the search itself does not report
+per-component progress.
+}
+\examples{
+\dontrun{
+result <- identify_components(result, verbose = TRUE)
+}
+
 }

@@ -125,3 +125,60 @@ test_that("identify_components() rejects a bad result", {
     class = "moosaic-error-bad_argument"
   )
 })
+
+test_that("identify_components() reports search counts and progress", {
+  bg <- mk_comp("background", 5, c(`73` = 1))
+  bg$is_background <- TRUE
+  res <- structure(
+    list(
+      components = list(
+        mk_comp("analyte", 2, c(`78` = 1)),
+        mk_comp("empty", 8, c(`94` = 0)),
+        bg
+      )
+    ),
+    class = "moosaic_result"
+  )
+  local_mocked_bindings(.run_mspepsearch = \(q) list())
+  expect_message(
+    output <- capture.output(
+      out <- suppressMessages(
+        identify_components(res, cal, verbose = TRUE),
+        classes = "moosaic-message-empty_spectrum"
+      )
+    ),
+    "Searching library for 1 components"
+  )
+  expect_match(paste(output, collapse = ""), "100%", fixed = TRUE)
+  expect_length(out$components, 3L)
+})
+
+test_that("identify_components() is quiet unless verbose is enabled", {
+  res <- structure(
+    list(components = list(mk_comp("analyte", 2, c(`78` = 1)))),
+    class = "moosaic_result"
+  )
+  local_mocked_bindings(.run_mspepsearch = \(q) list())
+  expect_silent(identify_components(res, cal))
+  expect_silent(identify_components(res, cal, verbose = FALSE))
+})
+
+test_that("identify_components() skips progress when nothing is searchable", {
+  for (components in list(list(), list(mk_comp("empty", 2, c(`78` = 0))))) {
+    res <- structure(list(components = components), class = "moosaic_result")
+    expect_silent(suppressMessages(
+      identify_components(res, cal, verbose = TRUE),
+      classes = "moosaic-message-empty_spectrum"
+    ))
+  }
+})
+
+test_that("identify_components() rejects invalid verbose values", {
+  res <- structure(list(components = list()), class = "moosaic_result")
+  for (verbose in list(NA, NULL, 1, "TRUE", c(TRUE, FALSE))) {
+    expect_error(
+      identify_components(res, cal, verbose = verbose),
+      class = "moosaic-error-bad_argument"
+    )
+  }
+})

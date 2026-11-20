@@ -502,7 +502,7 @@ duplicate estimates. Cores with no retained analyte contribute no FID area.
 
 | File | Function | Exported |
 |---|---|---|
-| `identify_components.R` | `identify_components(result)` | yes |
+| `identify_components.R` | `identify_components(result, ri_cal = NULL, verbose = FALSE)` | yes |
 | `annotate_component.R` | `annotate_component(component, ri_cal = NULL)` | yes |
 | `component_to_query.R` | `.component_to_query(component, ri)` | no — `list(name, mz, intst (max 999), retention_index)` |
 | `write_msp.R` | `write_msp(components, path)` | yes (export only) |
@@ -529,6 +529,11 @@ duplicate estimates. Cores with no retained analyte contribute no FID area.
 - `.score_candidates()` re-ranks high-MF/large-RI-miss below in-window candidate
 
 **Stage tests:** synthetic components with mocked search → final ID chosen as expected.
+
+With `verbose = TRUE`, identification reports the number of searchable analytes
+and displays a text progress bar, advancing after the single batched library
+search and after each analyte annotation. The search backend does not expose
+per-component progress. No progress bar is opened when no spectra are searchable.
 
 **Challenge tests** (`skip_on_os(c("mac","linux"))`, `skip_if(is.null(getOption("moosaic.library_path")))`): real deconvolved spectra from phenols excerpt searched; compare top hit with/without deconvolution.
 
@@ -638,6 +643,7 @@ Each step: unit tests → implement → stage tests → challenge tests → cove
 | Pseudo F-ratio rank vote | `.rank_pfr()` adapts Giebelhaus et al. 2022 (doi:10.1016/j.chroma.2022.463499): F CDF of consecutive `s_k^2/s_{k+1}^2` with df `(w-1, w-2)`, as in the paper (cheap; no permutation null). Deviations, chosen on simulations: no autoscaling (it masks minor components); rank = last significant ratio, not leading run; only ratios up to `max_rank + 1` tested (tail ratios of noise are spuriously large). Cutoff 0.95, not the paper's 0.7 (0.7 over-calls). In the default `rank_methods` (always runs as a cheap vote; never gated like PA). |
 | Shoulder windows force PA | `detect_fid_windows()` adds a `shoulder` column (any peak flagged by `.has_shoulder()`); `process_window()` passes it as `estimate_rank(force_pa = )` so a shoulder is not lost when the FID-blind cheap votes agree on too low a rank. |
 | Localized deconvolution | Bound ownership cores by 0.5 min and four FID apexes by default, with padded fit context and deterministic half-open apex ownership. This removes the whole-region rank ceiling without raising the per-fit rank cap. Validate counts and spectra on crowded synthetic runs; real-data component recovery remains a separate challenge. |
+| Identification progress | Preserve batched searching; optional verbose progress advances after the library call and during annotation, not within the search backend. |
 
 ## 20. Later extensions
 
