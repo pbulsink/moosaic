@@ -38,6 +38,8 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.0.9000" id="moosaic-0009000">moosaic 0.0.0.9000<a class="anchor" aria-label="anchor" href="#moosaic-0009000"></a></h2>
 <ul><li>
+<code><a href="../reference/process_sample.html">process_sample()</a></code> validates processing options and the spectral search library before reading input files.</li>
+<li>
 <code><a href="../reference/deconvolve_run.html">deconvolve_run()</a></code> supports optional progress reporting and retains localized components by non-overlapping apex ownership, with core-only FID integration to avoid counting overlapping context twice.</li>
 <li>
 <code><a href="../reference/detect_fid_windows.html">detect_fid_windows()</a></code> localizes crowded merged regions using new <code>window_max_width</code> (0.5 min) and <code>window_max_peaks</code> (4) options. Both accept <code>Inf</code> to restore legacy merging. Fit intervals retain padding and at least two available MS scans.</li>

@@ -66,6 +66,12 @@ A `moosaic_result` with `components`, `windows`, `identifications`,
 or
 [`write_pdf_report()`](https://pbulsink.github.io/moosaic/reference/write_pdf_report.md).
 
+## Details
+
+Validates function arguments and configured processing options,
+including the spectral search library, before reading or processing
+data.
+
 ## Examples
 
 ``` r

@@ -2,6 +2,9 @@
 
 ## moosaic 0.0.0.9000
 
+- [`process_sample()`](https://pbulsink.github.io/moosaic/reference/process_sample.md)
+  validates processing options and the spectral search library before
+  reading input files.
 - [`deconvolve_run()`](https://pbulsink.github.io/moosaic/reference/deconvolve_run.md)
   supports optional progress reporting and retains localized components
   by non-overlapping apex ownership, with core-only FID integration to
