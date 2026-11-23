@@ -41,6 +41,10 @@ Runs the whole pipeline: \code{\link[=read_experiment]{read_experiment()}}, \cod
 FID baseline check, \code{\link[=deconvolve_run]{deconvolve_run()}}, \code{\link[=identify_components]{identify_components()}},
 \code{\link[=quantify]{quantify()}} and (by default) \code{\link[=summarize_report]{summarize_report()}}.
 }
+\details{
+Validates function arguments and configured processing options,
+including the spectral search library, before reading or processing data.
+}
 \examples{
 \dontrun{
 res <- process_sample("run.ms", "run.ch", sample_info("S1", density = 0.85))
